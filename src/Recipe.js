@@ -9,6 +9,7 @@ export class Recipe extends Component {
   constructor(props) {
     super(props);
     this.state = { edit: false, recipe: {} };
+    this.handleEditMode = this.handleEditMode.bind(this);
   }
 
   componentDidMount() {
@@ -21,6 +22,7 @@ export class Recipe extends Component {
       });
     }
     
+    // TODO: handle error getting a recipe
     axios.get('http://localhost:3050/api/v1/recipes/' + params.id)
       .then((response) => {
         let recipe = response.data;
@@ -43,6 +45,12 @@ export class Recipe extends Component {
       });
   }
 
+  handleEditMode(editMode) {
+    this.setState({
+        edit: editMode
+      });
+  }
+
   render() {
     if (!this.state.recipe.title) {
       // TODO: loading message?
@@ -54,7 +62,7 @@ export class Recipe extends Component {
           <Col sm="12" md={{ size: 8, offset: 2 }}>
             <img src={this.state.recipe.image} alt={this.state.recipe.title} style={{ 'maxWidth': '100%', 'maxHeight': 400 }} />
             { this.state.edit === 'true' ?
-            <EditableRecipe initialRecipe={this.state.recipe} />
+            <EditableRecipe initialRecipe={this.state.recipe} editMode={this.handleEditMode} />
             :
             <ReadonlyRecipe recipe={this.state.recipe} />
             }
@@ -73,6 +81,8 @@ export class EditableRecipe extends Component {
     initialRecipe.tags = initialRecipe.tags.join(' ');
     this.state = { recipe: initialRecipe };
     this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
   }
 
   handleChange(event) {
@@ -93,12 +103,27 @@ export class EditableRecipe extends Component {
     });
   }
 
+  handleSubmit(event) {
+    event.preventDefault();
+
+    axios.put('http://localhost:3050/api/v1/recipes/' + this.state.recipe._id, this.state.recipe)
+      .then((response) => {
+        console.log(response);
+        });
+  }
+
+  handleCancel(event) {
+    event.preventDefault();
+
+    this.props.editMode(false);
+  }
+
   render() {
     if (!this.state.recipe) {
       return null;
     }
     return (
-      <Form>
+      <Form onSubmit={this.handleSubmit} onCancel={this.handleCancel}>
         <FormGroup>
           <Label for="titleText">Title</Label>
           <Input type="text" name="title" id="titleText" value={this.state.recipe.title} onChange={this.handleChange} />
@@ -217,7 +242,7 @@ export class EditableRecipe extends Component {
           </Label>
         </FormGroup>
         <br />
-        <Button>Update</Button>
+        <Button type="submit">Update</Button> <Button type="button" onClick={this.handleCancel}>Cancel</Button>
       </Form>
     );
   }
