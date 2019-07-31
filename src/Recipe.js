@@ -43,7 +43,7 @@ export class Recipe extends Component {
   }
 
   render () {
-    if (!this.state.recipe.title) {
+    if (!this.state.recipe || !this.state.recipe.title) {
       // TODO: loading message?
       return null
     }
@@ -91,9 +91,6 @@ export class EditableRecipe extends Component {
   }
 
   render () {
-    if (!this.state.recipe) {
-      return null
-    }
     return (
       <Form>
         <FormGroup>
@@ -224,7 +221,7 @@ export class ReadonlyRecipe extends Component {
   render () {
     const recipe = this.props.recipe
     let listTags
-    if (recipe && recipe.tags) {
+    if (recipe.tags) {
       listTags = recipe.tags.map((tag) =>
         <Badge color='secondary' key={tag} pill>{tag}</Badge>
       )
