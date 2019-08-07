@@ -67,7 +67,9 @@ export class EditableRecipe extends Component {
   constructor (props) {
     super(props)
     let initialRecipe = props.initialRecipe
-    initialRecipe.tags = initialRecipe.tags.join(' ')
+    if (initialRecipe.tags) {
+      initialRecipe.tags = initialRecipe.tags.join(' ')
+    }
     this.state = { recipe: initialRecipe }
     this.handleChange = this.handleChange.bind(this)
   }
@@ -151,7 +153,7 @@ export class EditableRecipe extends Component {
         </FormGroup>
         <FormGroup check>
           <Label check>
-            <Input type='checkbox' id='freezesCheck' checked={this.state.recipe.freezes} onChange={this.handleChange} />{' '}
+            <Input type='checkbox' name='freezes' id='freezesCheck' checked={this.state.recipe.freezes} onChange={this.handleChange} />{' '}
             Freezes
           </Label>
         </FormGroup>
@@ -163,7 +165,7 @@ export class EditableRecipe extends Component {
           <Label for='equipmentText'>Equipment</Label>
           <Input type='text' name='equipment' id='equipmentText' value={this.state.recipe.equipment} onChange={this.handleChange} />
         </FormGroup>
-        { this.state.recipe && this.state.recipe.macros
+        { this.state.recipe.macros
           ? <div>
             <Row form>
               <Col md={3}>
@@ -200,13 +202,13 @@ export class EditableRecipe extends Component {
         </FormGroup>
         <FormGroup check inline>
           <Label check>
-            <Input type='checkbox' id='tryCheck' checked={this.state.recipe.wantToTry} onChange={this.handleChange} />{' '}
+            <Input type='checkbox' id='tryCheck' name='wantToTry' checked={this.state.recipe.wantToTry} onChange={this.handleChange} />{' '}
             Want to try
           </Label>
         </FormGroup>
         <FormGroup check inline>
           <Label check>
-            <Input type='checkbox' id='doneCheck' checked={this.state.recipe.done} onChange={this.handleChange} />{' '}
+            <Input type='checkbox' id='doneCheck' name='done' checked={this.state.recipe.done} onChange={this.handleChange} />{' '}
             Tried
           </Label>
         </FormGroup>
