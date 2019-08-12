@@ -1,7 +1,7 @@
 import React from 'react'
 import { mount } from 'enzyme'
 import axios from 'axios'
-import { Recipe, EditableRecipe } from './Recipe'
+import { Recipe } from './Recipe'
 
 jest.mock('axios')
 
@@ -14,6 +14,10 @@ describe('Recipe', () => {
       data: {
         _id: '1234',
         title: 'testRecipe',
+        url: '',
+        author: 'test author',
+        image: '',
+        source: 'test source',
         ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient' }, { name: 'test ingredient without quantity or unit' }],
         tags: ['test', 'new'],
         instructions: '',
@@ -21,8 +25,12 @@ describe('Recipe', () => {
         prepTime: '20m',
         cookingTime: '30m',
         macros: { carbs: 90, protein: 68, fat: 24, calories: 700 },
+        rating: '',
+        freezes: false,
+        wantToTry: false,
         storage: 'fridge',
         notes: 'new recipe',
+        done: false,
         equipment: 'pan'
       }
     }
@@ -121,7 +129,14 @@ describe('Recipe', () => {
     })
 
     it('handles changes in the form for every field', async () => {
-      const wrapper = mount(<EditableRecipe initialRecipe={recipeData.data} />)
+      const match = { params: { id: '1234' } }
+      const location = { search: '?edit=true' }
+      const parentWrapper = mount(<Recipe location={location} match={match} />)
+      await axios
+      parentWrapper.update() // Re-render component
+
+      const wrapper = parentWrapper.find('EditableRecipe').at(0) // get EditableRecipe component
+
       const titleText = wrapper.find('#titleText').at(0)
       titleText.simulate('change', { target: { value: 'new title', name: 'title' } })
       expect(wrapper.state().recipe.title).toEqual('new title')
@@ -152,13 +167,13 @@ describe('Recipe', () => {
       const equipmentText = wrapper.find('#equipmentText').at(0)
       equipmentText.simulate('change', { target: { value: 'new equipment', name: 'equipment' } })
       const caloriesText = wrapper.find('#caloriesText').at(0)
-      caloriesText.simulate('change', { target: { value: 'new cals', name: 'macros_calories' } })
+      caloriesText.simulate('change', { target: { value: 'new cals', name: 'calories' } })
       const proteinText = wrapper.find('#proteinText').at(0)
-      proteinText.simulate('change', { target: { value: 'new protein', name: 'macros_protein' } })
+      proteinText.simulate('change', { target: { value: 'new protein', name: 'protein' } })
       const carbsText = wrapper.find('#carbsText').at(0)
-      carbsText.simulate('change', { target: { value: 'new carbs', name: 'macros_carbs' } })
+      carbsText.simulate('change', { target: { value: 'new carbs', name: 'carbs' } })
       const fatText = wrapper.find('#fatText').at(0)
-      fatText.simulate('change', { target: { value: 'new fats', name: 'macros_fat' } })
+      fatText.simulate('change', { target: { value: 'new fats', name: 'fat' } })
       const ratingText = wrapper.find('#ratingText').at(0)
       ratingText.simulate('change', { target: { value: 'new rating', name: 'rating' } })
       const freezesCheck = wrapper.find('#freezesCheck').at(0)
@@ -183,12 +198,10 @@ describe('Recipe', () => {
         storage: 'new storage',
         notes: 'new notes',
         equipment: 'new equipment',
-        macros: {
-          calories: 'new cals',
-          protein: 'new protein',
-          carbs: 'new carbs',
-          fat: 'new fats'
-        },
+        calories: 'new cals',
+        protein: 'new protein',
+        carbs: 'new carbs',
+        fat: 'new fats',
         rating: 'new rating',
         freezes: true,
         wantToTry: true,
