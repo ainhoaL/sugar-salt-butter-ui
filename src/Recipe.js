@@ -38,6 +38,14 @@ export class Recipe extends Component {
             ingredientString += ingredient.name;
             return ingredientString;
           }).join('\n')
+
+          if (recipe.macros) { // Flatten recipe object
+            recipe.calories = recipe.macros.calories;
+            recipe.carbs = recipe.macros.carbs;
+            recipe.protein = recipe.macros.protein;
+            recipe.fat = recipe.macros.fat;
+            delete recipe.macros;
+          }
         }
         this.setState({
           recipe: recipe
@@ -78,7 +86,7 @@ export class EditableRecipe extends Component {
   constructor(props) {
     super(props);
     let initialRecipe = props.initialRecipe;
-    initialRecipe.tags = initialRecipe.tags.join(' ');
+    initialRecipe.tags = initialRecipe.tags.join(', ');
     this.state = { recipe: initialRecipe };
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -91,12 +99,7 @@ export class EditableRecipe extends Component {
     const name = target.name;
 
     let newRecipe = { ...this.state.recipe };
-    if (name.indexOf('macros') > -1) {
-      let macroName = name.split('_')[1];
-      newRecipe.macros[macroName] = value;
-    } else {
-      newRecipe[name] = value;
-    }
+    newRecipe[name] = value;
 
     this.setState({
       recipe: newRecipe
@@ -194,37 +197,34 @@ export class EditableRecipe extends Component {
           <Label for="equipmentText">Equipment</Label>
           <Input type="text" name="equipment" id="equipmentText" value={this.state.recipe.equipment} onChange={this.handleChange} />
         </FormGroup>
-        { this.state.recipe && this.state.recipe.macros ?
           <div>
             <Row form>
               <Col md={3}>
                 <FormGroup>
                   <Label for="caloriesText">Calories</Label>
-                  <Input type="text" name="macros_calories" id="caloriesText" value={this.state.recipe.macros.calories} onChange={this.handleChange} />
+                  <Input type="text" name="calories" id="caloriesText" value={this.state.recipe.calories} onChange={this.handleChange} />
                 </FormGroup>
               </Col>
               <Col md={3}>
                 <FormGroup>
                   <Label for="proteinText">Protein</Label>
-                  <Input type="text" name="macros_protein" id="proteinText" value={this.state.recipe.macros.protein} onChange={this.handleChange} />
+                  <Input type="text" name="protein" id="proteinText" value={this.state.recipe.protein} onChange={this.handleChange} />
                 </FormGroup>
               </Col>
               <Col md={3}>
                 <FormGroup>
                   <Label for="carbsText">Carbs</Label>
-                  <Input type="text" name="macros_carbs" id="carbsText" value={this.state.recipe.macros.carbs} onChange={this.handleChange} />
+                  <Input type="text" name="carbs" id="carbsText" value={this.state.recipe.carbs} onChange={this.handleChange} />
                 </FormGroup>
               </Col>
               <Col md={3}>
                 <FormGroup>
                   <Label for="fatText">Fat</Label>
-                  <Input type="text" name="macros_fat" id="fatText" value={this.state.recipe.macros.fat} onChange={this.handleChange} />
+                  <Input type="text" name="fat" id="fatText" value={this.state.recipe.fat} onChange={this.handleChange} />
                 </FormGroup>
               </Col>
             </Row>
           </div>
-          : null
-        }
         <FormGroup>
           <Label for="ratingText">Rating</Label>
           <Input type="text" name="rating" id="ratingText" value={this.state.recipe.rating} onChange={this.handleChange} />
@@ -296,11 +296,11 @@ export class ReadonlyRecipe extends Component {
           </p>
           : null
         }
-        { recipe.macros && recipe.macros.calories ?
-          <p>Calories: {recipe.macros.calories} 
-          Protein: {recipe.macros.protein} 
-          Carbs: {recipe.macros.carbs} 
-          Fat: {recipe.macros.carbs} 
+        { recipe.calories ?
+          <p>Calories: {recipe.calories} 
+          Protein: {recipe.protein} 
+          Carbs: {recipe.carbs} 
+          Fat: {recipe.carbs} 
           </p>
           : null
         }
