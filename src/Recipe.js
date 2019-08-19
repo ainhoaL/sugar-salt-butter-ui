@@ -77,9 +77,9 @@ export class EditableRecipe extends Component {
 
   constructor(props) {
     super(props);
-    let initialRecipe = props.initialRecipe;
-    initialRecipe.tags = initialRecipe.tags.join(', ');
-    this.state = { recipe: initialRecipe };
+    let recipe = { ...props.initialRecipe }; // Copy to not alter main recipe object
+    recipe.tags = recipe.tags.join(', ');
+    this.state = { recipe: recipe };
     this.handleChange = this.handleChange.bind(this);
   }
 
