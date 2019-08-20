@@ -74,11 +74,11 @@ export class Recipe extends Component {
 export class EditableRecipe extends Component {
   constructor (props) {
     super(props)
-    let initialRecipe = props.initialRecipe
-    if (initialRecipe.tags) {
-      initialRecipe.tags = initialRecipe.tags.join(', ')
+    let recipe = { ...props.initialRecipe } // Copy to not alter main recipe object
+    if (recipe.tags) {
+      recipe.tags = recipe.tags.join(', ')
     }
-    this.state = { recipe: initialRecipe }
+    this.state = { recipe: recipe }
     this.handleChange = this.handleChange.bind(this)
   }
 
