@@ -18,7 +18,13 @@ describe('Recipe', () => {
         author: 'test author',
         image: '',
         source: 'test source',
-        ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient' }, { name: 'test ingredient without quantity or unit' }],
+        ingredients: [
+          { quantity: 1, unit: 'g', name: 'test ingredient' },
+          { name: 'test ingredient without quantity or unit' },
+          { quantity: 1, unit: 'cup', name: 'test ingredient2', group: 'test group' },
+          { quantity: 1, unit: 'g', name: 'test ingredient3', group: 'test group' },
+          { quantity: 1, name: 'test ingredient without unit', group: 'new group' }
+        ],
         tags: ['test', 'new'],
         instructions: '',
         servings: 4,
@@ -156,8 +162,8 @@ describe('Recipe', () => {
       prepTimeText.simulate('change', { target: { value: 'new preptime', name: 'prepTime' } })
       const cookingTimeText = wrapper.find('#cookingTimeText').at(0)
       cookingTimeText.simulate('change', { target: { value: 'new cooking time', name: 'cookingTime' } })
-      const ingredientsText = wrapper.find('#ingredientsText').at(0)
-      ingredientsText.simulate('change', { target: { value: 'new ingredients', name: 'ingredients' } })
+      const ingredientListText = wrapper.find('#ingredientListText').at(0)
+      ingredientListText.simulate('change', { target: { value: 'new ingredients', name: 'ingredientList' } })
       const instructionsText = wrapper.find('#instructionsText').at(0)
       instructionsText.simulate('change', { target: { value: 'new instructions', name: 'instructions' } })
       const storageText = wrapper.find('#storageText').at(0)
@@ -182,7 +188,7 @@ describe('Recipe', () => {
       tryCheck.simulate('change', { target: { checked: true, name: 'wantToTry', type: 'checkbox' } })
       const doneCheck = wrapper.find('#doneCheck').at(0)
       doneCheck.simulate('change', { target: { checked: true, name: 'done', type: 'checkbox' } })
-      expect(wrapper.state().recipe).toEqual({
+      expect(wrapper.state().recipe).toMatchObject({
         _id: '1234',
         title: 'new title',
         url: 'new url',
@@ -193,7 +199,7 @@ describe('Recipe', () => {
         servings: 'new servings',
         prepTime: 'new preptime',
         cookingTime: 'new cooking time',
-        ingredients: 'new ingredients',
+        ingredientList: 'new ingredients',
         instructions: 'new instructions',
         storage: 'new storage',
         notes: 'new notes',
