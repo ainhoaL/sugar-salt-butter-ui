@@ -25,7 +25,7 @@ describe('Recipe', () => {
         prepTime: '20m',
         cookingTime: '30m',
         macros: { carbs: 90, protein: 68, fat: 24, calories: 700 },
-        rating: '',
+        rating: 3,
         freezes: false,
         wantToTry: false,
         storage: 'fridge',
@@ -45,6 +45,7 @@ describe('Recipe', () => {
     }
 
     axios.get.mockResolvedValue(recipeData)
+    axios.put.mockResolvedValue()
   })
 
   it('gets recipe by Id on render', () => {
@@ -207,6 +208,56 @@ describe('Recipe', () => {
         wantToTry: true,
         done: true
       })
+    })
+
+    it('handles a form submit and updates recipe in server', async () => {
+      const match = { params: { id: '1234' } }
+      const location = { search: '?edit=true' }
+      const parentWrapper = mount(<Recipe location={location} match={match} />)
+      await axios
+      parentWrapper.update() // Re-render component
+
+      const wrapper = parentWrapper.find('EditableRecipe').at(0) // get EditableRecipe component
+
+      const titleText = wrapper.find('#titleText').at(0)
+      titleText.simulate('change', { target: { value: 'new title', name: 'title' } })
+      expect(wrapper.state().recipe.title).toEqual('new title')
+      const urlText = wrapper.find('#urlText').at(0)
+      urlText.simulate('change', { target: { value: 'new url', name: 'url' } })
+      const sourceText = wrapper.find('#sourceText').at(0)
+      sourceText.simulate('change', { target: { value: 'new source', name: 'source' } })
+
+      const form = wrapper.find('form')
+      form.simulate('submit')
+
+      expect(wrapper.state().recipe).toEqual({
+        _id: '1234',
+        title: 'new title',
+        url: 'new url',
+        source: 'new source',
+        author: 'test author',
+        image: '',
+        tags: 'test, new',
+        servings: 4,
+        prepTime: '20m',
+        cookingTime: '30m',
+        ingredients: '1 g test ingredient\ntest ingredient without quantity or unit',
+        instructions: '',
+        storage: 'fridge',
+        notes: 'new recipe',
+        equipment: 'pan',
+        calories: 700,
+        protein: 68,
+        carbs: 90,
+        fat: 24,
+        rating: 3,
+        freezes: false,
+        wantToTry: false,
+        done: false
+      })
+
+      expect(axios.put).toHaveBeenCalledTimes(1)
+      expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/1234', wrapper.state().recipe)
     })
   })
 })

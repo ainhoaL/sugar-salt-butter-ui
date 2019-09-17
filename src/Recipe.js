@@ -21,7 +21,7 @@ export class Recipe extends Component {
     }
 
     axios.get('http://localhost:3050/api/v1/recipes/' + params.id)
-      .then((response) => {
+      .then((response) => { // TODO: handle error getting a recipe
         let recipe = response.data
         if (recipe && recipe.ingredients) {
           recipe.ingredients = recipe.ingredients.map((ingredient) => {
@@ -74,12 +74,13 @@ export class Recipe extends Component {
 export class EditableRecipe extends Component {
   constructor (props) {
     super(props)
-    let recipe = { ...props.initialRecipe } // Copy to not alter main recipe object
+    let recipe = props.initialRecipe
     if (recipe.tags) {
       recipe.tags = recipe.tags.join(', ')
     }
-    this.state = { recipe: recipe }
+    this.state = { recipe: props.initialRecipe, updatedRecipe: false }
     this.handleChange = this.handleChange.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
   }
 
   handleChange (event) {
@@ -95,9 +96,18 @@ export class EditableRecipe extends Component {
     })
   }
 
+  handleSubmit (event) {
+    event.preventDefault()
+
+    axios.put('http://localhost:3050/api/v1/recipes/' + this.state.recipe._id, this.state.recipe)
+      .then((response) => {
+        this.setState({ updatedRecipe: true })
+      })
+  }
+
   render () {
     return (
-      <Form>
+      <Form onSubmit={this.handleSubmit}>
         <FormGroup>
           <Label for='titleText'>Title</Label>
           <Input type='text' name='title' id='titleText' value={this.state.recipe.title} onChange={this.handleChange} />
@@ -212,8 +222,12 @@ export class EditableRecipe extends Component {
             Tried
           </Label>
         </FormGroup>
-        <br />
-        <Button>Update</Button>
+        <br /><br />
+        <Button type='submit'>Update</Button>
+        { this.state.updatedRecipe
+          ? <i> Recipe updated</i>
+          : null }
+        <br /><br />
       </Form>
     )
   }
@@ -223,7 +237,7 @@ export class ReadonlyRecipe extends Component {
   render () {
     const recipe = this.props.recipe
     let listTags
-    if (recipe.tags) {
+    if (recipe && recipe.tags) {
       listTags = recipe.tags.map((tag) =>
         <Badge color='secondary' key={tag} pill>{tag}</Badge>
       )
