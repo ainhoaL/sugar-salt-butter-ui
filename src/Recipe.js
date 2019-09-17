@@ -107,7 +107,7 @@ export class EditableRecipe extends Component {
 
   render () {
     return (
-      <Form onSubmit={this.handleSubmit} onCancel={this.handleCancel}>
+      <Form onSubmit={this.handleSubmit}>
         <FormGroup>
           <Label for='titleText'>Title</Label>
           <Input type='text' name='title' id='titleText' value={this.state.recipe.title} onChange={this.handleChange} />
@@ -223,7 +223,7 @@ export class EditableRecipe extends Component {
           </Label>
         </FormGroup>
         <br /><br />
-        <Button type='submit' id='updateButton'>Update</Button>
+        <Button type='submit'>Update</Button>
         { this.state.updatedRecipe
           ? <i> Recipe updated</i>
           : null }
