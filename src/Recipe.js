@@ -99,7 +99,15 @@ export class EditableRecipe extends Component {
   handleSubmit (event) {
     event.preventDefault()
 
-    axios.put('http://localhost:3050/api/v1/recipes/' + this.state.recipe._id, this.state.recipe)
+    // Recreate macros structure in recipe object
+    let recipeObject = { ...this.state.recipe }
+    recipeObject.macros = { calories: recipeObject.calories, protein: recipeObject.protein, carbs: recipeObject.carbs, fat: recipeObject.fat }
+    delete recipeObject.calories
+    delete recipeObject.protein
+    delete recipeObject.carbs
+    delete recipeObject.fat
+
+    axios.put('http://localhost:3050/api/v1/recipes/' + this.state.recipe._id, recipeObject)
       .then((response) => {
         this.setState({ updatedRecipe: true })
       })
