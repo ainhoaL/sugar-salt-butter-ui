@@ -230,7 +230,7 @@ describe('Recipe', () => {
       const form = wrapper.find('form')
       form.simulate('submit')
 
-      expect(wrapper.state().recipe).toEqual({
+      let expectedRecipeObject = {
         _id: '1234',
         title: 'new title',
         url: 'new url',
@@ -246,18 +246,20 @@ describe('Recipe', () => {
         storage: 'fridge',
         notes: 'new recipe',
         equipment: 'pan',
-        calories: 700,
-        protein: 68,
-        carbs: 90,
-        fat: 24,
+        macros: {
+          calories: 700,
+          protein: 68,
+          carbs: 90,
+          fat: 24
+        },
         rating: 3,
         freezes: false,
         wantToTry: false,
         done: false
-      })
+      }
 
       expect(axios.put).toHaveBeenCalledTimes(1)
-      expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/1234', wrapper.state().recipe)
+      expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/1234', expectedRecipeObject)
     })
   })
 })
