@@ -224,7 +224,7 @@ describe('Recipe component', () => {
     it('handles a form submit and updates recipe in server', async () => {
       const match = { params: { id: '1234' } }
       const location = { search: '?edit=true' }
-      const parentWrapper = mount(<Recipe location={location} match={match} />)
+      const parentWrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
       await axios
       parentWrapper.update() // Re-render component
 
@@ -243,6 +243,7 @@ describe('Recipe component', () => {
 
       let expectedRecipeObject = {
         _id: '1234',
+        userId: 'testUser',
         title: 'new title',
         url: 'new url',
         source: 'new source',
