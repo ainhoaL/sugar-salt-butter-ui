@@ -20,34 +20,37 @@ export class Recipe extends Component {
       })
     }
 
-    axios.get('http://localhost:3050/api/v1/recipes/' + params.id)
-      .then((response) => { // TODO: handle error getting a recipe
-        let recipe = response.data
-        if (recipe && recipe.ingredients) {
-          recipe.ingredients = recipe.ingredients.map((ingredient) => {
-            let ingredientString = ''
-            if (ingredient.quantity) {
-              ingredientString += ingredient.quantity + ' '
-            }
-            if (ingredient.unit) {
-              ingredientString += ingredient.unit + ' '
-            }
-            ingredientString += ingredient.name
-            return ingredientString
-          }).join('\n')
+    if (this.props.idToken) {
+      axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.idToken
+      axios.get('http://localhost:3050/api/v1/recipes/' + params.id)
+        .then((response) => { // TODO: deal with error
+          let recipe = response.data
+          if (recipe && recipe.ingredients) {
+            recipe.ingredients = recipe.ingredients.map((ingredient) => {
+              let ingredientString = ''
+              if (ingredient.quantity) {
+                ingredientString += ingredient.quantity + ' '
+              }
+              if (ingredient.unit) {
+                ingredientString += ingredient.unit + ' '
+              }
+              ingredientString += ingredient.name
+              return ingredientString
+            }).join('\n')
 
-          if (recipe.macros) { // Flatten recipe object
-            recipe.calories = recipe.macros.calories
-            recipe.carbs = recipe.macros.carbs
-            recipe.protein = recipe.macros.protein
-            recipe.fat = recipe.macros.fat
-            delete recipe.macros
+            if (recipe.macros) { // Flatten recipe object
+              recipe.calories = recipe.macros.calories
+              recipe.carbs = recipe.macros.carbs
+              recipe.protein = recipe.macros.protein
+              recipe.fat = recipe.macros.fat
+              delete recipe.macros
+            }
           }
-        }
-        this.setState({
-          recipe: recipe
+          this.setState({
+            recipe: recipe
+          })
         })
-      })
+    }
   }
 
   render () {
