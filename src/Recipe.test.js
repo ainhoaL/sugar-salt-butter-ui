@@ -260,7 +260,7 @@ describe('Recipe component', () => {
         servings: 4,
         prepTime: '20m',
         cookingTime: '30m',
-        ingredients: '1 g test ingredient\ntest ingredient without quantity or unit',
+        ingredients: '1 g test ingredient\ntest ingredient without quantity or unit\n# test group\n1 cup test ingredient2\n1 g test ingredient3\n# new group\n1 test ingredient without unit',
         instructions: '',
         storage: 'fridge',
         notes: 'new recipe',

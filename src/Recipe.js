@@ -131,6 +131,9 @@ export class EditableRecipe extends Component {
     delete recipeObject.protein
     delete recipeObject.carbs
     delete recipeObject.fat
+    // Recreate ingredients structure in a way the server can understand. Ingredients needs to be a string (currently an array, ingredientList is the value we want)
+    recipeObject.ingredients = recipeObject.ingredientList
+    delete recipeObject.ingredientList
 
     axios.put('http://localhost:3050/api/v1/recipes/' + this.state.recipe._id, recipeObject)
       .then((response) => {
