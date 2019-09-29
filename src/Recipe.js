@@ -20,44 +20,47 @@ export class Recipe extends Component {
       })
     }
 
-    axios.get('http://localhost:3050/api/v1/recipes/' + params.id)
-      .then((response) => { // TODO: deal with error
-        let recipe = response.data
-        if (recipe && recipe.ingredients) {
-          let ingredients = []
-          let currentGroup
-          recipe.ingredients.forEach((ingredient) => {
-            let ingredientString = ''
-            let ingredientGroup = ingredient.group
-            if (ingredientGroup !== currentGroup) {
-              ingredients.push({ groupHeader: ingredientGroup })
-              currentGroup = ingredientGroup
-            }
+    if (this.props.idToken) {
+      axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.idToken
+      axios.get('http://localhost:3050/api/v1/recipes/' + params.id)
+        .then((response) => { // TODO: deal with error
+          let recipe = response.data
+          if (recipe && recipe.ingredients) {
+            let ingredients = []
+            let currentGroup
+            recipe.ingredients.forEach((ingredient) => {
+              let ingredientString = ''
+              let ingredientGroup = ingredient.group
+              if (ingredientGroup !== currentGroup) {
+                ingredients.push({ groupHeader: ingredientGroup })
+                currentGroup = ingredientGroup
+              }
 
-            if (ingredient.quantity) {
-              ingredientString += ingredient.quantity + ' '
-            }
-            if (ingredient.unit) {
-              ingredientString += ingredient.unit + ' '
-            }
-            ingredientString += ingredient.name
-            ingredients.push({ ingredient: ingredientString })
-          })
+              if (ingredient.quantity) {
+                ingredientString += ingredient.quantity + ' '
+              }
+              if (ingredient.unit) {
+                ingredientString += ingredient.unit + ' '
+              }
+              ingredientString += ingredient.name
+              ingredients.push({ ingredient: ingredientString })
+            })
 
-          recipe.ingredientList = ingredients
+            recipe.ingredientList = ingredients
 
-          if (recipe.macros) { // Flatten recipe object
-            recipe.calories = recipe.macros.calories
-            recipe.carbs = recipe.macros.carbs
-            recipe.protein = recipe.macros.protein
-            recipe.fat = recipe.macros.fat
-            delete recipe.macros
+            if (recipe.macros) { // Flatten recipe object
+              recipe.calories = recipe.macros.calories
+              recipe.carbs = recipe.macros.carbs
+              recipe.protein = recipe.macros.protein
+              recipe.fat = recipe.macros.fat
+              delete recipe.macros
+            }
           }
-        }
-        this.setState({
-          recipe: recipe
+          this.setState({
+            recipe: recipe
+          })
         })
-      })
+    }
   }
 
   render () {
@@ -84,7 +87,7 @@ export class Recipe extends Component {
 export class EditableRecipe extends Component {
   constructor (props) {
     super(props)
-    let recipe = { ...props.initialRecipe } // Copy to not alter main recipe object
+    let recipe = props.initialRecipe
     if (recipe.tags) {
       recipe.tags = recipe.tags.join(', ')
     }
@@ -99,8 +102,10 @@ export class EditableRecipe extends Component {
 
     recipe.ingredientList = ingredientList
 
-    this.state = { recipe: recipe }
+    this.state = { recipe: recipe, updatedRecipe: false }
+
     this.handleChange = this.handleChange.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
   }
 
   handleChange (event) {
@@ -116,9 +121,26 @@ export class EditableRecipe extends Component {
     })
   }
 
+  handleSubmit (event) {
+    event.preventDefault()
+
+    // Recreate macros structure in recipe object
+    let recipeObject = { ...this.state.recipe }
+    recipeObject.macros = { calories: recipeObject.calories, protein: recipeObject.protein, carbs: recipeObject.carbs, fat: recipeObject.fat }
+    delete recipeObject.calories
+    delete recipeObject.protein
+    delete recipeObject.carbs
+    delete recipeObject.fat
+
+    axios.put('http://localhost:3050/api/v1/recipes/' + this.state.recipe._id, recipeObject)
+      .then((response) => {
+        this.setState({ updatedRecipe: true })
+      })
+  }
+
   render () {
     return (
-      <Form>
+      <Form onSubmit={this.handleSubmit}>
         <FormGroup>
           <Label for='titleText'>Title</Label>
           <Input type='text' name='title' id='titleText' value={this.state.recipe.title} onChange={this.handleChange} />
@@ -233,8 +255,12 @@ export class EditableRecipe extends Component {
             Tried
           </Label>
         </FormGroup>
-        <br />
-        <Button>Update</Button>
+        <br /><br />
+        <Button type='submit'>Update</Button>
+        { this.state.updatedRecipe
+          ? <i> Recipe updated</i>
+          : null }
+        <br /><br />
       </Form>
     )
   }
@@ -244,7 +270,7 @@ export class ReadonlyRecipe extends Component {
   render () {
     const recipe = this.props.recipe
     let listTags
-    if (recipe.tags) {
+    if (recipe && recipe.tags) {
       listTags = recipe.tags.map((tag) =>
         <Badge color='secondary' key={tag} pill>{tag}</Badge>
       )

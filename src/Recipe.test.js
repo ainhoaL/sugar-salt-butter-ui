@@ -8,11 +8,12 @@ jest.mock('axios')
 let recipeData
 let basicRecipeData
 
-describe('Recipe', () => {
+describe('Recipe component', () => {
   beforeEach(() => {
     recipeData = {
       data: {
         _id: '1234',
+        userId: 'testUser',
         title: 'testRecipe',
         url: '',
         author: 'test author',
@@ -31,7 +32,7 @@ describe('Recipe', () => {
         prepTime: '20m',
         cookingTime: '30m',
         macros: { carbs: 90, protein: 68, fat: 24, calories: 700 },
-        rating: '',
+        rating: 3,
         freezes: false,
         wantToTry: false,
         storage: 'fridge',
@@ -44,6 +45,7 @@ describe('Recipe', () => {
     basicRecipeData = {
       data: {
         _id: '123456',
+        userId: 'testUser',
         title: 'testRecipe',
         ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient' }, { name: 'test ingredient without quantity or unit' }],
         instructions: ''
@@ -51,21 +53,31 @@ describe('Recipe', () => {
     }
 
     axios.get.mockResolvedValue(recipeData)
+    axios.put.mockResolvedValue()
+  })
+
+  it('does not get recipe if there is no idToken', () => {
+    const match = { params: { id: 'testId' } }
+    const location = { search: '' }
+    mount(<Recipe location={location} match={match} />)
+
+    expect(axios.get).toHaveBeenCalledTimes(0)
   })
 
   it('gets recipe by Id on render', () => {
     const match = { params: { id: 'testId' } }
     const location = { search: '' }
-    mount(<Recipe location={location} match={match} />)
+    mount(<Recipe location={location} match={match} idToken='testUser' />)
 
     expect(axios.get).toHaveBeenCalledTimes(1)
+    expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
     expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId')
   })
 
   describe('when recipe is readonly', () => {
     it('renders readonly recipe when edit is not set', async () => {
       const match = { params: { id: '1234' } }
-      const wrapper = mount(<Recipe location={location} match={match} />)
+      const wrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
 
       await axios
       wrapper.update() // Re-render component
@@ -76,7 +88,7 @@ describe('Recipe', () => {
     it('renders readonly recipe when edit is set to false', async () => {
       const match = { params: { id: '1234' } }
       const location = { search: '?edit=false' }
-      const wrapper = mount(<Recipe location={location} match={match} />)
+      const wrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
 
       await axios
       wrapper.update() // Re-render component
@@ -88,7 +100,7 @@ describe('Recipe', () => {
       axios.get.mockResolvedValue(basicRecipeData)
       const match = { params: { id: '123456' } }
       const location = { search: '?edit=false' }
-      const wrapper = mount(<Recipe location={location} match={match} />)
+      const wrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
 
       await axios
       wrapper.update() // Re-render component
@@ -101,7 +113,7 @@ describe('Recipe', () => {
     it('renders form when server returns a recipe', async () => {
       const match = { params: { id: '1234' } }
       const location = { search: '?edit=true' }
-      const wrapper = mount(<Recipe location={location} match={match} />)
+      const wrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
 
       await axios
       wrapper.update() // Re-render component
@@ -114,7 +126,7 @@ describe('Recipe', () => {
 
       const match = { params: { id: '1234' } }
       const location = { search: '?edit=true' }
-      const wrapper = mount(<Recipe location={location} match={match} />)
+      const wrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
 
       await axios
       wrapper.update() // Re-render component
@@ -126,7 +138,7 @@ describe('Recipe', () => {
       axios.get.mockResolvedValue(basicRecipeData)
       const match = { params: { id: '123456' } }
       const location = { search: '?edit=true' }
-      const wrapper = mount(<Recipe location={location} match={match} />)
+      const wrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
 
       await axios
       wrapper.update() // Re-render component
@@ -137,7 +149,7 @@ describe('Recipe', () => {
     it('handles changes in the form for every field', async () => {
       const match = { params: { id: '1234' } }
       const location = { search: '?edit=true' }
-      const parentWrapper = mount(<Recipe location={location} match={match} />)
+      const parentWrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
       await axios
       parentWrapper.update() // Re-render component
 
@@ -190,6 +202,7 @@ describe('Recipe', () => {
       doneCheck.simulate('change', { target: { checked: true, name: 'done', type: 'checkbox' } })
       expect(wrapper.state().recipe).toMatchObject({
         _id: '1234',
+        userId: 'testUser',
         title: 'new title',
         url: 'new url',
         source: 'new source',
@@ -213,6 +226,60 @@ describe('Recipe', () => {
         wantToTry: true,
         done: true
       })
+    })
+
+    it('handles a form submit and updates recipe in server', async () => {
+      const match = { params: { id: '1234' } }
+      const location = { search: '?edit=true' }
+      const parentWrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
+      await axios
+      parentWrapper.update() // Re-render component
+
+      const wrapper = parentWrapper.find('EditableRecipe').at(0) // get EditableRecipe component
+
+      const titleText = wrapper.find('#titleText').at(0)
+      titleText.simulate('change', { target: { value: 'new title', name: 'title' } })
+      expect(wrapper.state().recipe.title).toEqual('new title')
+      const urlText = wrapper.find('#urlText').at(0)
+      urlText.simulate('change', { target: { value: 'new url', name: 'url' } })
+      const sourceText = wrapper.find('#sourceText').at(0)
+      sourceText.simulate('change', { target: { value: 'new source', name: 'source' } })
+
+      const form = wrapper.find('form')
+      form.simulate('submit')
+
+      let expectedRecipeObject = {
+        _id: '1234',
+        userId: 'testUser',
+        title: 'new title',
+        url: 'new url',
+        source: 'new source',
+        author: 'test author',
+        image: '',
+        tags: 'test, new',
+        servings: 4,
+        prepTime: '20m',
+        cookingTime: '30m',
+        ingredients: '1 g test ingredient\ntest ingredient without quantity or unit',
+        instructions: '',
+        storage: 'fridge',
+        notes: 'new recipe',
+        equipment: 'pan',
+        macros: {
+          calories: 700,
+          protein: 68,
+          carbs: 90,
+          fat: 24
+        },
+        rating: 3,
+        freezes: false,
+        wantToTry: false,
+        done: false
+      }
+
+      expect(axios.put).toHaveBeenCalledTimes(1)
+      expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
+      expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/1234', expectedRecipeObject)
     })
   })
 })
