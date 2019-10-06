@@ -1,6 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { mount } from 'enzyme'
+import { MemoryRouter } from 'react-router'
+import { Recipe } from './Recipe'
 import App from './App'
 
 describe('App component', () => {
@@ -30,5 +32,14 @@ describe('App component', () => {
     instance.onSignIn(googleUser)
     expect(wrapper.state('idToken')).toEqual('testIdToken')
     wrapper.update()
+  })
+
+  it.skip('renders Recipe component on /recipes/:id paths', () => {
+    const wrapper = mount(
+      <MemoryRouter initialEntries={['/recipes/1234']}>
+        <App />
+      </MemoryRouter>
+    )
+    expect(wrapper.find(Recipe)).toHaveLength(1)
   })
 })
