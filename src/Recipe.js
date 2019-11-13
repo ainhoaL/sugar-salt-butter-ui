@@ -35,8 +35,8 @@ export class Recipe extends Component {
   }
 
   getRecipe (idToken, recipeId) {
-    axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.idToken
-    axios.get('http://localhost:3050/api/v1/recipes/' + params.id)
+    axios.defaults.headers.common['Authorization'] = 'Bearer ' + idToken
+    axios.get('http://localhost:3050/api/v1/recipes/' + recipeId)
       .then((response) => { // TODO: deal with error
         let recipe = response.data
         if (recipe && recipe.ingredients) {
