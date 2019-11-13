@@ -40,8 +40,16 @@ export class Recipe extends Component {
       .then((response) => { // TODO: deal with error
         let recipe = response.data
         if (recipe && recipe.ingredients) {
-          recipe.ingredients = recipe.ingredients.map((ingredient) => {
+          let ingredients = []
+          let currentGroup
+          recipe.ingredients.forEach((ingredient) => {
             let ingredientString = ''
+            let ingredientGroup = ingredient.group
+            if (ingredientGroup !== currentGroup) {
+              ingredients.push({ groupHeader: ingredientGroup })
+              currentGroup = ingredientGroup
+            }
+
             if (ingredient.quantity) {
               ingredientString += ingredient.quantity + ' '
             }
@@ -49,8 +57,10 @@ export class Recipe extends Component {
               ingredientString += ingredient.unit + ' '
             }
             ingredientString += ingredient.name
-            return ingredientString
-          }).join('\n')
+            ingredients.push({ ingredient: ingredientString })
+          })
+
+          recipe.ingredientList = ingredients
 
           if (recipe.macros) { // Flatten recipe object
             recipe.calories = recipe.macros.calories
@@ -94,7 +104,19 @@ export class EditableRecipe extends Component {
     if (recipe.tags) {
       recipe.tags = recipe.tags.join(', ')
     }
-    this.state = { recipe: props.initialRecipe, updatedRecipe: false }
+
+    let ingredientList = recipe.ingredientList.map((item, index) => {
+      if (item.groupHeader) {
+        return '# ' + item.groupHeader
+      } else {
+        return item.ingredient
+      }
+    }).join('\n')
+
+    recipe.ingredientList = ingredientList
+
+    this.state = { recipe: recipe, updatedRecipe: false }
+
     this.handleChange = this.handleChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
   }
@@ -122,6 +144,9 @@ export class EditableRecipe extends Component {
     delete recipeObject.protein
     delete recipeObject.carbs
     delete recipeObject.fat
+    // Recreate ingredients structure in a way the server can understand. Ingredients needs to be a string (currently an array, ingredientList is the value we want)
+    recipeObject.ingredients = recipeObject.ingredientList
+    delete recipeObject.ingredientList
 
     axios.put('http://localhost:3050/api/v1/recipes/' + this.state.recipe._id, recipeObject)
       .then((response) => {
@@ -178,7 +203,7 @@ export class EditableRecipe extends Component {
         </Row>
         <FormGroup>
           <Label for='ingredientsText'>Ingredients</Label>
-          <Input type='textarea' name='ingredients' id='ingredientsText' value={this.state.recipe.ingredients} onChange={this.handleChange} />
+          <Input type='textarea' name='ingredientList' id='ingredientListText' value={this.state.recipe.ingredientList} onChange={this.handleChange} />
         </FormGroup>
         <FormGroup>
           <Label for='instructionsText'>Instructions</Label>
@@ -267,6 +292,14 @@ export class ReadonlyRecipe extends Component {
       )
     }
 
+    let ingredientList = recipe.ingredientList.map((item, index) => {
+      if (item.groupHeader) {
+        return <React.Fragment key={index}><strong>{item.groupHeader}: </strong><br /></React.Fragment>
+      } else {
+        return <React.Fragment key={index}>{item.ingredient}<br /></React.Fragment>
+      }
+    })
+
     return (
       <div>
         <h2>{recipe.title}</h2>
@@ -283,7 +316,7 @@ export class ReadonlyRecipe extends Component {
             : null }
         </p>
         <div style={{ 'whiteSpace': 'pre-line' }}><strong>Ingredients: </strong><br />
-          {recipe.ingredients}
+          {ingredientList}
         </div>
         <div style={{ 'whiteSpace': 'pre-line' }}><strong>Instructions: </strong><br />
           {recipe.instructions}
