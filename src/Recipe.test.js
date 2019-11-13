@@ -56,6 +56,10 @@ describe('Recipe component', () => {
     axios.put.mockResolvedValue()
   })
 
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('does not get recipe if there is no idToken', () => {
     const match = { params: { id: 'testId' } }
     const location = { search: '' }
@@ -64,11 +68,24 @@ describe('Recipe component', () => {
     expect(axios.get).toHaveBeenCalledTimes(0)
   })
 
-  it('gets recipe by Id on render', () => {
+  it('gets recipe by Id when receiving an idToken', () => {
     const match = { params: { id: 'testId' } }
     const location = { search: '' }
     mount(<Recipe location={location} match={match} idToken='testUser' />)
 
+    expect(axios.get).toHaveBeenCalledTimes(1)
+    expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
+    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId')
+  })
+
+  it('gets recipe by Id on props updated with idToken', () => {
+    const match = { params: { id: 'testId' } }
+    const location = { search: '' }
+    const wrapper = mount(<Recipe location={location} match={match} />)
+
+    expect(axios.get).toHaveBeenCalledTimes(0)
+
+    wrapper.setProps({ idToken: 'testUser' })
     expect(axios.get).toHaveBeenCalledTimes(1)
     expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
     expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId')

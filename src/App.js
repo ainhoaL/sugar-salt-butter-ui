@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Navbar, NavItem, Nav, NavbarBrand } from 'reactstrap'
-import { BrowserRouter as Router, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import { Recipe } from './Recipe'
 
 class App extends Component {
@@ -45,9 +45,9 @@ class App extends Component {
           </Nav>
         </Navbar>
         <Router>
-          { /* istanbul ignore next */ this.state.idToken
-            ? <Route path='/recipes/:id' render={routeProps => <Recipe {...routeProps} idToken={this.state.idToken} />} />
-            : null }
+          <Switch>
+            <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={this.state.idToken} />} />
+          </Switch>
         </Router>
       </div>
     )
