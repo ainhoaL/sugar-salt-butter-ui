@@ -62,12 +62,12 @@ export class Recipe extends Component {
 
           recipe.ingredientList = ingredients
 
-          if (recipe.macros) { // Flatten recipe object
-            recipe.calories = recipe.macros.calories
-            recipe.carbs = recipe.macros.carbs
-            recipe.protein = recipe.macros.protein
-            recipe.fat = recipe.macros.fat
-            delete recipe.macros
+          if (recipe.nutrition) { // Flatten recipe object
+            recipe.calories = recipe.nutrition.calories
+            recipe.carbs = recipe.nutrition.carbs
+            recipe.protein = recipe.nutrition.protein
+            recipe.fat = recipe.nutrition.fat
+            delete recipe.nutrition
           }
         }
         this.setState({
@@ -137,9 +137,9 @@ export class EditableRecipe extends Component {
   handleSubmit (event) {
     event.preventDefault()
 
-    // Recreate macros structure in recipe object
+    // Recreate nutrition structure in recipe object
     let recipeObject = { ...this.state.recipe }
-    recipeObject.macros = { calories: recipeObject.calories, protein: recipeObject.protein, carbs: recipeObject.carbs, fat: recipeObject.fat }
+    recipeObject.nutrition = { calories: recipeObject.calories, protein: recipeObject.protein, carbs: recipeObject.carbs, fat: recipeObject.fat }
     delete recipeObject.calories
     delete recipeObject.protein
     delete recipeObject.carbs
@@ -215,8 +215,8 @@ export class EditableRecipe extends Component {
         </FormGroup>
         <FormGroup check>
           <Label check>
-            <Input type='checkbox' name='freezes' id='freezesCheck' checked={this.state.recipe.freezes} onChange={this.handleChange} />{' '}
-            Freezes
+            <Input type='checkbox' name='freezable' id='freezableCheck' checked={this.state.recipe.freezable} onChange={this.handleChange} />{' '}
+            Freezable
           </Label>
         </FormGroup>
         <FormGroup>
@@ -300,10 +300,15 @@ export class ReadonlyRecipe extends Component {
       }
     })
 
+    let recipeSource = recipe.source
+    if (recipe.author) {
+      recipeSource += ' by ' + recipe.author
+    }
+
     return (
       <div>
         <h2>{recipe.title}</h2>
-        <a href={recipe.url} target='blank'><h4>{recipe.source} by {recipe.author}</h4></a>
+        <a href={recipe.url} target='blank'><h4>{recipeSource}</h4></a>
         <p>
           { recipe.servings
             ? <span>Servings: {recipe.servings}</span>
