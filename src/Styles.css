@@ -1,0 +1,42 @@
+.results {
+    width:100%;
+    display:block
+}
+
+.recipeBox {
+    width:202px;
+    height:224px;
+    display:inline-block;
+    vertical-align:top;
+    margin:6px
+}
+
+.recipeCard {
+    border:1px solid #E1E3DF;
+    display:block;
+    height:100%;
+    text-decoration:none;
+    padding:4px
+}
+
+.recipeCard:hover {
+    border:1px solid #E1E3DF;
+    display:block;
+    height:100%;
+    text-decoration:none;
+    padding:4px
+}
+
+.recipeImage {
+    width:192px;
+    height:192px;
+    object-fit:cover
+}
+
+.recipeTitle {
+    color:#222;
+    width:192px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis
+}

@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import { Button, Form, Input, Card, CardImg, CardBody, CardTitle, CardDeck } from 'reactstrap'
+import { Button, Form, Input } from 'reactstrap'
+import './Styles.css'
 
 const axios = require('axios')
 
@@ -37,9 +38,9 @@ export class Home extends Component {
           <Input type='text' name='search' id='searchText' onChange={this.handleSearchChange} value={this.state.search} />
           <Button>Search</Button>
         </Form>
-        {this.state.searchResults ?
-          <div><span>{this.state.searchResults.length} results</span>
-            <ul style={{width:"100%", display:"block"}}>
+        {this.state.searchResults
+          ? <div><span>{this.state.searchResults.length} results</span>
+            <ul className='results'>
               {this.state.searchResults.map((recipe) =>
                 <RecipeCard key={recipe._id} data={recipe} />
               )}
@@ -52,7 +53,7 @@ export class Home extends Component {
 }
 
 class RecipeCard extends Component {
-  render() {
+  render () {
     const linkToRecipe = 'recipes/' + this.props.data._id
     return (
       // <Card style={{width:"25%"}}>
@@ -61,10 +62,10 @@ class RecipeCard extends Component {
       //     <CardTitle>{this.props.data.title}</CardTitle>
       //   </CardBody>
       // </Card>
-      <li style={{width:"202px", height: "250px", display:"inline-block", "vertical-align":"top", margin:"6px"}}>
-        <a href={linkToRecipe} style={{border:"1px solid #E1E3DF", display:"block", height:"100%", "text-decoration":"none"}}>
-          <img src={this.props.data.image} style={{width:"200px", height:"200px", "object-fit":"cover"}} /><br />
-          <span style={{color:"#222"}}>{this.props.data.title}</span>
+      <li className='recipeBox'>
+        <a href={linkToRecipe} className='recipeCard'>
+          <img src={this.props.data.image} className='recipeImage' alt={this.props.data.title} /><br />
+          <p className='recipeTitle'>{this.props.data.title}</p>
         </a>
       </li>
     )
