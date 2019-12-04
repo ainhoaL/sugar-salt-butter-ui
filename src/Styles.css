@@ -1,0 +1,22 @@
+.recipeHeaderContainer {
+  overflow: hidden;
+  padding-top: 2%;
+}
+
+.recipeHeaderImage {
+  float: left;
+}
+
+.recipeHeaderImage img {
+  max-width: 400px;
+  max-height: 400px;
+}
+
+.recipeHeaderText {
+  overflow: hidden;
+  padding-left: 14px;
+}
+
+.recipeParagraph {
+  white-space: pre-line;
+}

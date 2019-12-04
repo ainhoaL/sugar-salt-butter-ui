@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Button, Form, FormGroup, Label, Input, Container, Row, Col, Badge } from 'reactstrap'
 import qs from 'qs'
+import './Styles.css'
 
 const axios = require('axios')
 
@@ -84,8 +85,7 @@ export class Recipe extends Component {
     return (
       <Container>
         <Row>
-          <Col sm='12' md={{ size: 8, offset: 2 }}>
-            <img src={this.state.recipe.image} alt={this.state.recipe.title} style={{ 'maxWidth': '100%', 'maxHeight': 400 }} />
+          <Col sm='12' md={{ size: 10, offset: 1 }}>
             { this.state.edit === 'true'
               ? <EditableRecipe initialRecipe={this.state.recipe} />
               : <ReadonlyRecipe recipe={this.state.recipe} />
@@ -307,25 +307,32 @@ export class ReadonlyRecipe extends Component {
 
     return (
       <div>
-        <h2>{recipe.title}</h2>
-        <a href={recipe.url} target='blank'><h4>{recipeSource}</h4></a>
-        <p>
-          { recipe.servings
-            ? <span>Servings: {recipe.servings}</span>
-            : null }
-          { recipe.prepTime
-            ? <span>Prep time: {recipe.prepTime}</span>
-            : null }
-          { recipe.cookingTime
-            ? <span>Cooking time: {recipe.cookingTime}</span>
-            : null }
-        </p>
-        <div style={{ 'whiteSpace': 'pre-line' }}><strong>Ingredients: </strong><br />
+        <div className='recipeHeaderContainer'>
+          <div className='recipeHeaderImage'>
+            <img src={recipe.image} alt={recipe.title} />
+          </div>
+          <div className='recipeHeaderText'>
+            <h2>{recipe.title}</h2>
+            <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a><br />
+            { recipe.servings
+              ? <p>Servings: {recipe.servings}</p>
+              : null }
+            { recipe.prepTime
+              ? <p>Prep time: {recipe.prepTime}</p>
+              : null }
+            { recipe.cookingTime
+              ? <p>Cooking time: {recipe.cookingTime}</p>
+              : null }
+            {listTags}
+          </div>
+        </div>
+        <br />
+        <p><strong>Ingredients: </strong><br />
           {ingredientList}
-        </div>
-        <div style={{ 'whiteSpace': 'pre-line' }}><strong>Instructions: </strong><br />
+        </p>
+        <p className='recipeParagraph'><strong>Instructions: </strong><br />
           {recipe.instructions}
-        </div>
+        </p>
         { recipe.storage
           ? <p><strong>Storage: </strong><br />
             {recipe.storage}
@@ -344,14 +351,11 @@ export class ReadonlyRecipe extends Component {
           : null
         }
         { recipe.calories
-          ? <p>Calories: {recipe.calories}
-            Protein: {recipe.protein}
-            Carbs: {recipe.carbs}
-            Fat: {recipe.carbs}
+          ? <p>Nutritional information: <br />
+            Calories: {recipe.calories} Protein: {recipe.protein} Carbs: {recipe.carbs} Fat: {recipe.carbs}
           </p>
           : null
         }
-        {listTags}
       </div>
     )
   }
