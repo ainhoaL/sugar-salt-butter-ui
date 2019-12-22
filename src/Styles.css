@@ -8,7 +8,15 @@
     height:224px;
     display:inline-block;
     vertical-align:top;
-    margin:6px
+    margin:6px;
+}
+
+.recipeBox:hover {
+    width:500px;
+    height:500px;
+    display:inline-block;
+    vertical-align:top;
+    margin:6px;
 }
 
 .recipeCard {
@@ -16,7 +24,7 @@
     display:block;
     height:100%;
     text-decoration:none;
-    padding:4px
+    padding:4px;
 }
 
 .recipeCard:hover {
@@ -27,16 +35,39 @@
     padding:4px
 }
 
-.recipeImage {
+.recipeCardImage {
     width:192px;
     height:192px;
     object-fit:cover
 }
 
-.recipeTitle {
+.recipeCardTitle {
     color:#222;
     width:192px;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis
+}
+
+.recipeHeaderContainer {
+  overflow: hidden;
+  padding-top: 2%;
+}
+
+.recipeHeaderImage {
+  float: left;
+}
+
+.recipeHeaderImage img {
+  max-width: 400px;
+  max-height: 400px;
+}
+
+.recipeHeaderText {
+  overflow: hidden;
+  padding-left: 14px;
+}
+
+.recipeParagraph {
+  white-space: pre-line;
 }

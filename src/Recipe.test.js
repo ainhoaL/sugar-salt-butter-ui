@@ -19,15 +19,21 @@ describe('Recipe component', () => {
         author: 'test author',
         image: '',
         source: 'test source',
-        ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient' }, { name: 'test ingredient without quantity or unit' }],
+        ingredients: [
+          { quantity: 1, unit: 'g', name: 'test ingredient' },
+          { name: 'test ingredient without quantity or unit' },
+          { quantity: 1, unit: 'cup', name: 'test ingredient2', group: 'test group' },
+          { quantity: 1, unit: 'g', name: 'test ingredient3', group: 'test group' },
+          { quantity: 1, name: 'test ingredient without unit', group: 'new group' }
+        ],
         tags: ['test', 'new'],
         instructions: '',
         servings: 4,
         prepTime: '20m',
         cookingTime: '30m',
-        macros: { carbs: 90, protein: 68, fat: 24, calories: 700 },
+        nutrition: { carbs: 90, protein: 68, fat: 24, calories: 700 },
         rating: 3,
-        freezes: false,
+        freezable: false,
         wantToTry: false,
         storage: 'fridge',
         notes: 'new recipe',
@@ -185,8 +191,8 @@ describe('Recipe component', () => {
       prepTimeText.simulate('change', { target: { value: 'new preptime', name: 'prepTime' } })
       const cookingTimeText = wrapper.find('#cookingTimeText').at(0)
       cookingTimeText.simulate('change', { target: { value: 'new cooking time', name: 'cookingTime' } })
-      const ingredientsText = wrapper.find('#ingredientsText').at(0)
-      ingredientsText.simulate('change', { target: { value: 'new ingredients', name: 'ingredients' } })
+      const ingredientListText = wrapper.find('#ingredientListText').at(0)
+      ingredientListText.simulate('change', { target: { value: 'new ingredients', name: 'ingredientList' } })
       const instructionsText = wrapper.find('#instructionsText').at(0)
       instructionsText.simulate('change', { target: { value: 'new instructions', name: 'instructions' } })
       const storageText = wrapper.find('#storageText').at(0)
@@ -205,13 +211,13 @@ describe('Recipe component', () => {
       fatText.simulate('change', { target: { value: 'new fats', name: 'fat' } })
       const ratingText = wrapper.find('#ratingText').at(0)
       ratingText.simulate('change', { target: { value: 'new rating', name: 'rating' } })
-      const freezesCheck = wrapper.find('#freezesCheck').at(0)
-      freezesCheck.simulate('change', { target: { checked: true, name: 'freezes', type: 'checkbox' } })
+      const freezableCheck = wrapper.find('#freezableCheck').at(0)
+      freezableCheck.simulate('change', { target: { checked: true, name: 'freezable', type: 'checkbox' } })
       const tryCheck = wrapper.find('#tryCheck').at(0)
       tryCheck.simulate('change', { target: { checked: true, name: 'wantToTry', type: 'checkbox' } })
       const doneCheck = wrapper.find('#doneCheck').at(0)
       doneCheck.simulate('change', { target: { checked: true, name: 'done', type: 'checkbox' } })
-      expect(wrapper.state().recipe).toEqual({
+      expect(wrapper.state().recipe).toMatchObject({
         _id: '1234',
         userId: 'testUser',
         title: 'new title',
@@ -223,7 +229,7 @@ describe('Recipe component', () => {
         servings: 'new servings',
         prepTime: 'new preptime',
         cookingTime: 'new cooking time',
-        ingredients: 'new ingredients',
+        ingredientList: 'new ingredients',
         instructions: 'new instructions',
         storage: 'new storage',
         notes: 'new notes',
@@ -233,7 +239,7 @@ describe('Recipe component', () => {
         carbs: 'new carbs',
         fat: 'new fats',
         rating: 'new rating',
-        freezes: true,
+        freezable: true,
         wantToTry: true,
         done: true
       })
@@ -271,19 +277,19 @@ describe('Recipe component', () => {
         servings: 4,
         prepTime: '20m',
         cookingTime: '30m',
-        ingredients: '1 g test ingredient\ntest ingredient without quantity or unit',
+        ingredients: '1 g test ingredient\ntest ingredient without quantity or unit\n# test group\n1 cup test ingredient2\n1 g test ingredient3\n# new group\n1 test ingredient without unit',
         instructions: '',
         storage: 'fridge',
         notes: 'new recipe',
         equipment: 'pan',
-        macros: {
+        nutrition: {
           calories: 700,
           protein: 68,
           carbs: 90,
           fat: 24
         },
         rating: 3,
-        freezes: false,
+        freezable: false,
         wantToTry: false,
         done: false
       }

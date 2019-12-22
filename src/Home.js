@@ -64,8 +64,8 @@ class RecipeCard extends Component {
       // </Card>
       <li className='recipeBox'>
         <a href={linkToRecipe} className='recipeCard'>
-          <img src={this.props.data.image} className='recipeImage' alt={this.props.data.title} /><br />
-          <p className='recipeTitle'>{this.props.data.title}</p>
+          <img src={this.props.data.image} className='recipeCardImage' alt={this.props.data.title} /><br />
+          <p className='recipeCardTitle'>{this.props.data.title}</p>
         </a>
       </li>
     )
