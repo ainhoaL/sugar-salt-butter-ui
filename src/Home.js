@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Button, Form, Input } from 'reactstrap'
+import debounce from 'lodash.debounce'
 import './Styles.css'
 
 const axios = require('axios')
@@ -7,9 +8,19 @@ const axios = require('axios')
 export class Home extends Component {
   constructor (props) {
     super(props)
-    this.state = { search: '', searchResults: null }
+    this.state = { search: '', isLoading: false, skip: 0, searchResults: null, searchCount: 0 }
     this.handleSearchChange = this.handleSearchChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
+    this.handleScroll = this.handleScroll.bind(this)
+    this.search = this.search.bind(this)
+
+    window.onscroll = debounce(() => {
+      let newSkip = this.state.skip + this.state.searchResults.length
+      if (this.state.isLoading || newSkip >= this.state.searchCount) return
+      if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
+        this.search(newSkip)
+      }
+    }, 100)
   }
 
   handleSearchChange (event) {
@@ -22,23 +33,40 @@ export class Home extends Component {
 
   handleSubmit (event) {
     event.preventDefault()
+    this.setState({ searchResults: null }, () => {
+      this.search(0)
+    })
+  }
 
-    axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.idToken
-    axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + this.state.search)
-      .then((response) => { // TODO: deal with error
-        this.setState({ searchResults: response.data })
-      })
+  search (skip) {
+    this.setState({ isLoading: true, skip: skip }, () => {
+      axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.idToken
+      axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + this.state.search + '&skip=' + skip)
+        .then((response) => { // TODO: deal with error
+          console.log(response.data)
+          let results = this.state.searchResults ? this.state.searchResults.concat(response.data.recipes) : response.data.recipes
+          this.setState({ searchResults: results, searchCount: response.data.count, isLoading: false })
+        })
+    })
+  }
+
+  handleScroll (event) {
+    const { offsetHeight, scrollTop, scrollHeight } = event.target
+    console.log('WE HAVE SCROLLED')
+    if (offsetHeight + scrollTop === scrollHeight) {
+      this.search(this.state.skip + this.state.searchResults.length())
+    }
   }
 
   render () {
     return (
-      <div>
+      <div onScroll={this.handleScroll}>
         <Form inline onSubmit={this.handleSubmit}>
           <Input type='text' name='search' id='searchText' onChange={this.handleSearchChange} value={this.state.search} />
           <Button>Search</Button>
         </Form>
         {this.state.searchResults
-          ? <div><span>{this.state.searchResults.length} results</span>
+          ? <div><span>{this.state.searchCount} results</span>
             <ul className='results'>
               {this.state.searchResults.map((recipe) =>
                 <RecipeCard key={recipe._id} data={recipe} />
