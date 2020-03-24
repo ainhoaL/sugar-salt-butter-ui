@@ -26,7 +26,6 @@ export class Home extends Component {
     axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.idToken
     axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + this.state.search)
       .then((response) => { // TODO: deal with error
-        console.log(response.data)
         this.setState({ searchResults: response.data })
       })
   }

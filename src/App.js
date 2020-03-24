@@ -47,7 +47,7 @@ class App extends Component {
         </Navbar>
         <Router>
           <Switch>
-            <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Home {...routeProps} idToken={this.state.idToken} />} />            
+            <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Home {...routeProps} idToken={this.state.idToken} />} />
             <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={this.state.idToken} />} />
           </Switch>
         </Router>
