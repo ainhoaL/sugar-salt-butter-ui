@@ -13,14 +13,14 @@ export class Home extends Component {
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleScroll = this.handleScroll.bind(this)
     this.search = this.search.bind(this)
+  }
 
-    window.onscroll = debounce(() => {
-      let newSkip = this.state.skip + this.state.searchResults.length
-      if (this.state.isLoading || newSkip >= this.state.searchCount) return
-      if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
-        this.search(newSkip)
-      }
-    }, 100)
+  componentDidMount () {
+    window.addEventListener('scroll', this.handleScroll)
+  }
+
+  componentWillUnmount () {
+    window.removeEventListener('scroll', this.handleScroll)
   }
 
   handleSearchChange (event) {
@@ -51,11 +51,26 @@ export class Home extends Component {
   }
 
   handleScroll (event) {
-    const { offsetHeight, scrollTop, scrollHeight } = event.target
-    console.log('WE HAVE SCROLLED')
-    if (offsetHeight + scrollTop === scrollHeight) {
-      this.search(this.state.skip + this.state.searchResults.length())
-    }
+    console.log('scrolling event')
+    debounce((event) => {
+      console.log('handlescroll called')
+      console.log(event)
+      console.log('onscrollcalled -----')
+      let newSkip = this.state.skip + this.state.searchResults.length
+      if (this.state.isLoading || newSkip >= this.state.searchCount) return
+
+      if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
+        console.log('We are searching with scroll through window.onscroll')
+        this.search(newSkip)
+      }
+    // const { offsetHeight, scrollTop, scrollHeight } = event.target
+    // console.log('WE HAVE SCROLLED')
+    // if (offsetHeight + scrollTop === scrollHeight) {
+    //   console.log('searching with scroll with handleScroll')
+    //   console.log(this.state.searchResults.length)
+    //   this.search(this.state.skip + this.state.searchResults.length)
+    // }
+    }, 100)(event)
   }
 
   render () {
