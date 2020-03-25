@@ -51,23 +51,16 @@ export class Home extends Component {
   }
 
   handleScroll (event) {
-    console.log('scrolling event')
     debounce((event) => {
-      console.log('handlescroll called')
-      console.log(event)
-      console.log('onscrollcalled -----')
+      console.log('handlescroll called', event)
       let newSkip = this.state.skip + this.state.searchResults.length
       if (this.state.isLoading || newSkip >= this.state.searchCount) return
 
       if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
-        console.log('We are searching with scroll through window.onscroll')
         this.search(newSkip)
       }
     // const { offsetHeight, scrollTop, scrollHeight } = event.target
-    // console.log('WE HAVE SCROLLED')
     // if (offsetHeight + scrollTop === scrollHeight) {
-    //   console.log('searching with scroll with handleScroll')
-    //   console.log(this.state.searchResults.length)
     //   this.search(this.state.skip + this.state.searchResults.length)
     // }
     }, 100)(event)
