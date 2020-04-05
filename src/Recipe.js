@@ -4,6 +4,33 @@ import qs from 'qs'
 
 const axios = require('axios')
 
+const defaultEditableRecipe = {
+  _id: '',
+  userId: '',
+  title: '',
+  url: '',
+  source: '',
+  author: '',
+  image: '',
+  tags: '',
+  servings: '',
+  prepTime: '',
+  cookingTime: '',
+  ingredients: '',
+  ingredientList: '',
+  instructions: '',
+  storage: '',
+  notes: '',
+  equipment: '',
+  calories: '',
+  protein: '',
+  carbs: '',
+  fat: '',
+  rating: '',
+  freezable: false,
+  wantToTry: false,
+  done: false
+}
 export function Recipe (props) {
   const [edit, setEdit] = useState(false)
   const [recipe, setRecipe] = useState({})
@@ -82,7 +109,7 @@ export function Recipe (props) {
 }
 
 export function EditableRecipe (props) {
-  const [recipe, setRecipe] = useState({})
+  const [recipe, setRecipe] = useState(defaultEditableRecipe)
   const [updatedRecipe, setUpdatedRecipe] = useState(false)
 
   useEffect(() => {
@@ -100,7 +127,7 @@ export function EditableRecipe (props) {
     }).join('\n')
 
     recipe.ingredientList = ingredientList
-    setRecipe(recipe)
+    setRecipe({ ...defaultEditableRecipe, ...recipe })
   }, [props])
 
   const handleChange = (event) => {
@@ -194,8 +221,8 @@ export function EditableRecipe (props) {
       </FormGroup>
       <FormGroup check>
         <Label check>
-          <Input type='checkbox' name='freezes' id='freezesCheck' checked={recipe.freezes} onChange={handleChange} />{' '}
-            Freezes
+          <Input type='checkbox' name='freezable' id='freezableCheck' checked={recipe.freezable} onChange={handleChange} />{' '}
+          Freezes
         </Label>
       </FormGroup>
       <FormGroup>
@@ -241,13 +268,13 @@ export function EditableRecipe (props) {
       <FormGroup check inline>
         <Label check>
           <Input type='checkbox' id='tryCheck' name='wantToTry' checked={recipe.wantToTry} onChange={handleChange} />{' '}
-            Want to try
+          Want to try
         </Label>
       </FormGroup>
       <FormGroup check inline>
         <Label check>
           <Input type='checkbox' id='doneCheck' name='done' checked={recipe.done} onChange={handleChange} />{' '}
-            Tried
+          Tried
         </Label>
       </FormGroup>
       <br /><br />
@@ -317,9 +344,9 @@ export function ReadonlyRecipe (props) {
       }
       { recipe.calories
         ? <p>Calories: {recipe.calories}
-            Protein: {recipe.protein}
-            Carbs: {recipe.carbs}
-            Fat: {recipe.carbs}
+          Protein: {recipe.protein}
+          Carbs: {recipe.carbs}
+          Fat: {recipe.carbs}
         </p>
         : null
       }

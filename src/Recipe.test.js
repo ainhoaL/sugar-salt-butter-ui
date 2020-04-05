@@ -34,7 +34,7 @@ describe('Recipe component', () => {
         cookingTime: '30m',
         macros: { carbs: 90, protein: 68, fat: 24, calories: 700 },
         rating: 3,
-        freezes: false,
+        freezable: false,
         wantToTry: false,
         storage: 'fridge',
         notes: 'new recipe',
@@ -257,8 +257,8 @@ describe('Recipe component', () => {
       fatText.simulate('change', { target: { value: 'new fats', name: 'fat' } })
       const ratingText = wrapper.find('#ratingText').at(0)
       ratingText.simulate('change', { target: { value: 'new rating', name: 'rating' } })
-      const freezesCheck = wrapper.find('#freezesCheck').at(0)
-      freezesCheck.simulate('change', { target: { checked: true, name: 'freezes', type: 'checkbox' } })
+      const freezableCheck = wrapper.find('#freezableCheck').at(0)
+      freezableCheck.simulate('change', { target: { checked: true, name: 'freezable', type: 'checkbox' } })
       const tryCheck = wrapper.find('#tryCheck').at(0)
       tryCheck.simulate('change', { target: { checked: true, name: 'wantToTry', type: 'checkbox' } })
       const doneCheck = wrapper.find('#doneCheck').at(0)
@@ -294,7 +294,7 @@ describe('Recipe component', () => {
           fat: 'new fats'
         },
         rating: 'new rating',
-        freezes: true,
+        freezable: true,
         wantToTry: true,
         done: true
       }
