@@ -6,16 +6,35 @@ import { Recipe } from './Recipe'
 import App from './App'
 
 describe('App component', () => {
+  let onSignInFn
+
   window.gapi = {
-    load: () => { }
+    load: (type, callback) => {
+      callback()
+    },
+    auth2: {
+      init: () => {
+        return Promise.resolve()
+      }
+    },
+    signin2: {
+      render: (type, options) => {
+        onSignInFn = options.onsuccess
+      }
+    }
   }
+
+  const setState = jest.fn()
+  const useStateSpy = jest.spyOn(React, 'useState')
+  useStateSpy.mockImplementation((init) => [init, setState])
+
   it('renders without crashing when user is not signed in to google', () => {
     const div = document.createElement('div')
     ReactDOM.render(<App />, div)
     ReactDOM.unmountComponentAtNode(div)
   })
 
-  it('renders without crashing when user signs in using google', () => {
+  it('renders without crashing when user signs in using google and sets state to correct idToken', async () => {
     let googleUser = {
       getBasicProfile: () => {
         return {
@@ -26,12 +45,9 @@ describe('App component', () => {
       },
       getAuthResponse: () => { return { id_token: 'testIdToken' } }
     }
-    const wrapper = mount(<App />)
-    const instance = wrapper.instance()
-    expect(wrapper.state('idToken')).toEqual(null)
-    instance.onSignIn(googleUser)
-    expect(wrapper.state('idToken')).toEqual('testIdToken')
-    wrapper.update()
+    await mount(<App />) // Wait so we get onSignInFn assigned after mount completes
+    onSignInFn(googleUser) // Simulate logging in
+    expect(setState).toHaveBeenCalledWith('testIdToken') // state has been set to correct idToken
   })
 
   it.skip('renders Recipe component on /recipes/:id paths', () => {
