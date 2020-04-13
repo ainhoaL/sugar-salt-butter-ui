@@ -2,6 +2,7 @@ import React from 'react'
 import { mount } from 'enzyme'
 import axios from 'axios'
 import { Home } from './Home'
+import { act } from 'react-dom/test-utils'
 
 jest.mock('axios')
 
@@ -30,13 +31,13 @@ describe('Home component', () => {
     it('and displays results when there are some', async () => {
       axios.get.mockResolvedValue(recipeResults)
       const wrapper = mount(<Home idToken='testUser' />)
-      wrapper.update() // Re-render component
 
       const form = wrapper.find('form')
       const searchText = wrapper.find('#searchText').at(0)
       searchText.simulate('change', { target: { value: 'sugar flour', name: 'search' } })
-      expect(wrapper.state().search).toEqual('sugar flour')
-      form.simulate('submit')
+      await act(async () => {
+        form.simulate('submit')
+      })
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
@@ -49,19 +50,19 @@ describe('Home component', () => {
     it('and displays no results when there are none', async () => {
       axios.get.mockResolvedValue({ data: [] })
       const wrapper = mount(<Home idToken='testUser' />)
-      wrapper.update() // Re-render component
 
       const form = wrapper.find('form')
       const searchText = wrapper.find('#searchText').at(0)
       searchText.simulate('change', { target: { value: 'sugar flour', name: 'search' } })
-      expect(wrapper.state().search).toEqual('sugar flour')
-      form.simulate('submit')
+      await act(async () => {
+        form.simulate('submit')
+      })
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
       expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=sugar flour')
 
-      wrapper.update() // Re-render component
+      wrapper.update() // Re-render component      
       expect(wrapper.find('RecipeCard').length).toEqual(0)
     })
   })

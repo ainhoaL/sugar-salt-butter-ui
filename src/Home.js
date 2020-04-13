@@ -1,72 +1,62 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 import { Button, Form, Input } from 'reactstrap'
 import './Styles.css'
 
 const axios = require('axios')
 
-export class Home extends Component {
-  constructor (props) {
-    super(props)
-    this.state = { search: '', searchResults: null }
-    this.handleSearchChange = this.handleSearchChange.bind(this)
-    this.handleSubmit = this.handleSubmit.bind(this)
-  }
+export function Home (props) {
+  const [search, setSearch] = useState('')
+  const [searchResults, setSearchResults] = useState(null)
 
-  handleSearchChange (event) {
+  const handleSearchChange = (event) => {
     const value = event.target.value
 
-    this.setState({
-      search: value
-    })
+    setSearch(value)
   }
 
-  handleSubmit (event) {
+  const handleSubmit = (event) => {
     event.preventDefault()
 
-    axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.idToken
-    axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + this.state.search)
+    axios.defaults.headers.common['Authorization'] = 'Bearer ' + props.idToken
+    axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + search)
       .then((response) => { // TODO: deal with error
-        this.setState({ searchResults: response.data })
+        setSearchResults(response.data)
       })
   }
 
-  render () {
-    return (
-      <div>
-        <Form inline onSubmit={this.handleSubmit}>
-          <Input type='text' name='search' id='searchText' onChange={this.handleSearchChange} value={this.state.search} />
-          <Button>Search</Button>
-        </Form>
-        {this.state.searchResults
-          ? <div><span>{this.state.searchResults.length} results</span>
-            <ul className='results'>
-              {this.state.searchResults.map((recipe) =>
-                <RecipeCard key={recipe._id} data={recipe} />
-              )}
-            </ul>
-          </div>
-          : null}
-      </div>
-    )
-  }
+  return (
+    <div>
+      <Form inline onSubmit={handleSubmit}>
+        <Input type='text' name='search' id='searchText' onChange={handleSearchChange} value={search} />
+        <Button>Search</Button>
+      </Form>
+      {searchResults
+        ? <div><span>{searchResults.length} results</span>
+          <ul className='results'>
+            {searchResults.map((recipe) =>
+              <RecipeCard key={recipe._id} data={recipe} />
+            )}
+          </ul>
+        </div>
+        : null}
+    </div>
+  )
 }
 
-class RecipeCard extends Component {
-  render () {
-    const linkToRecipe = 'recipes/' + this.props.data._id
-    return (
-      // <Card style={{width:"25%"}}>
-      //   <CardImg top width="100%" src={this.props.data.image} />
-      //   <CardBody>
-      //     <CardTitle>{this.props.data.title}</CardTitle>
-      //   </CardBody>
-      // </Card>
-      <li className='recipeBox'>
-        <a href={linkToRecipe} className='recipeCard'>
-          <img src={this.props.data.image} className='recipeCardImage' alt={this.props.data.title} /><br />
-          <p className='recipeCardTitle'>{this.props.data.title}</p>
-        </a>
-      </li>
-    )
-  }
+function RecipeCard (props) {
+  const linkToRecipe = 'recipes/' + props.data._id
+  return (
+  // <Card style={{width:"25%"}}>
+  //   <CardImg top width="100%" src={props.data.image} />
+  //   <CardBody>
+  //     <CardTitle>{props.data.title}</CardTitle>
+  //   </CardBody>
+  // </Card>
+    <li className='recipeBox'>
+      <a href={linkToRecipe} className='recipeCard'>
+        <img src={props.data.image} className='recipeCardImage' alt={props.data.title} /><br />
+        <p className='recipeCardTitle'>{props.data.title}</p>
+      </a>
+    </li>
+  )
 }

@@ -11,13 +11,13 @@
     margin:6px;
 }
 
-.recipeBox:hover {
+/*.recipeBox:hover {
     width:500px;
     height:500px;
     display:inline-block;
     vertical-align:top;
     margin:6px;
-}
+}*/
 
 .recipeCard {
     border:1px solid #E1E3DF;
