@@ -5,8 +5,8 @@ import './Styles.css'
 
 const axios = require('axios')
 
-export function Home (props) {
-  const [search, setSearch] = useState('')
+export function Search (props) {
+  const [searchString, setSearchString] = useState('')
   const [searchResults, setSearchResults] = useState(null)
   const [searchCount, setSearchCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -20,7 +20,6 @@ export function Home (props) {
   })
 
   useEffect(() => {
-    console.log('isloading has changed', isLoading)
     if (isLoading) {
       doSearch(skip)
     }
@@ -29,40 +28,39 @@ export function Home (props) {
   const handleSearchChange = (event) => {
     const value = event.target.value
 
-    setSearch(value)
+    setSearchString(value)
   }
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    console.log('setting skip to 0')
     setSkip(0)
     setIsLoading(true)
   }
 
   const doSearch = (newSkip) => {
-    if (props.idToken && search) {
-      axios.defaults.headers.common['Authorization'] = 'Bearer ' + props.idToken
-      axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + search + '&skip=' + newSkip)
+    if (props.idToken && searchString) {
+      axios.defaults.headers.common.Authorization = 'Bearer ' + props.idToken
+      axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + searchString + '&skip=' + newSkip)
         .then((response) => { // TODO: deal with error
-          console.log(response.data)
-          let results = newSkip !== 0 ? searchResults.concat(response.data.recipes) : response.data.recipes
+          const results = newSkip !== 0 ? searchResults.concat(response.data.recipes) : response.data.recipes
           setSearchResults(results)
           setSearchCount(response.data.count)
           setIsLoading(false)
         })
     } else {
       setIsLoading(false)
-    }   
+    }
   }
 
   const handleScroll = (event) => {
     debounce((event) => {
-      let newSkip = skip + searchResults.length
-      if (isLoading || newSkip >= searchCount) return
-      if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
-        console.log('setting skip to ' + newSkip)
-        setSkip(newSkip)
-        setIsLoading(true)
+      if (searchResults) {
+        const newSkip = skip + searchResults.length
+        if (isLoading || newSkip >= searchCount) return
+        if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
+          setSkip(newSkip)
+          setIsLoading(true)
+        }
       }
     // const { offsetHeight, scrollTop, scrollHeight } = event.target
     // if (offsetHeight + scrollTop === scrollHeight) {
@@ -74,7 +72,7 @@ export function Home (props) {
   return (
     <div onScroll={handleScroll}>
       <Form inline onSubmit={handleSubmit}>
-        <Input type='text' name='search' id='searchText' onChange={handleSearchChange} value={search} />
+        <Input type='text' name='search' id='searchText' onChange={handleSearchChange} value={searchString} />
         <Button>Search</Button>
       </Form>
       {searchResults

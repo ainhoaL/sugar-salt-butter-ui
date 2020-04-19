@@ -78,7 +78,7 @@ describe('Recipe component', () => {
       mount(<Recipe location={location} match={match} idToken='testUser' />)
     })
     expect(axios.get).toHaveBeenCalledTimes(1)
-    expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
+    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
     expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId')
   })
 
@@ -96,7 +96,7 @@ describe('Recipe component', () => {
       wrapper.setProps({ idToken: 'testUser' })
     })
     expect(axios.get).toHaveBeenCalledTimes(1)
-    expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
+    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
     expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId')
   })
 
@@ -269,7 +269,7 @@ describe('Recipe component', () => {
         form.simulate('submit')
       })
 
-      let expectedRecipeObject =
+      const expectedRecipeObject =
       {
         _id: '1234',
         userId: 'testUser',
@@ -300,7 +300,7 @@ describe('Recipe component', () => {
       }
 
       expect(axios.put).toHaveBeenCalledTimes(1)
-      expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
+      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
       expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/1234', expectedRecipeObject)
     })
   })

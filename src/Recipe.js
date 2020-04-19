@@ -41,7 +41,7 @@ export function Recipe (props) {
 
     const { search } = props.location
     if (search) {
-      let queryObj = qs.parse(search.substring(1, search.length))
+      const queryObj = qs.parse(search.substring(1, search.length))
       setEdit(queryObj.edit)
     }
 
@@ -51,16 +51,16 @@ export function Recipe (props) {
   }, [props])
 
   const getRecipe = (idToken, recipeId) => {
-    axios.defaults.headers.common['Authorization'] = 'Bearer ' + idToken
+    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
     axios.get('http://localhost:3050/api/v1/recipes/' + recipeId)
       .then((response) => { // TODO: deal with error
-        let recipe = response.data
+        const recipe = response.data
         if (recipe && recipe.ingredients) {
-          let ingredients = []
+          const ingredients = []
           let currentGroup
           recipe.ingredients.forEach((ingredient) => {
             let ingredientString = ''
-            let ingredientGroup = ingredient.group
+            const ingredientGroup = ingredient.group
             if (ingredientGroup !== currentGroup) {
               ingredients.push({ groupHeader: ingredientGroup })
               currentGroup = ingredientGroup
@@ -98,10 +98,9 @@ export function Recipe (props) {
     <Container>
       <Row>
         <Col sm='12' md={{ size: 10, offset: 1 }}>
-          { edit === 'true'
+          {edit === 'true'
             ? <EditableRecipe initialRecipe={recipe} />
-            : <ReadonlyRecipe recipe={recipe} />
-          }
+            : <ReadonlyRecipe recipe={recipe} />}
         </Col>
       </Row>
     </Container>
@@ -113,12 +112,12 @@ export function EditableRecipe (props) {
   const [updatedRecipe, setUpdatedRecipe] = useState(false)
 
   useEffect(() => {
-    let recipe = props.initialRecipe
+    const recipe = props.initialRecipe
     if (recipe.tags) {
       recipe.tags = recipe.tags.join(', ')
     }
 
-    let ingredientList = recipe.ingredientList.map((item, index) => {
+    const ingredientList = recipe.ingredientList.map((item, index) => {
       if (item.groupHeader) {
         return '# ' + item.groupHeader
       } else {
@@ -135,7 +134,7 @@ export function EditableRecipe (props) {
     const value = target.type === 'checkbox' ? target.checked : target.value
     const name = target.name
 
-    let newRecipe = { ...recipe }
+    const newRecipe = { ...recipe }
     newRecipe[name] = value
 
     setRecipe(newRecipe)
@@ -145,7 +144,7 @@ export function EditableRecipe (props) {
     event.preventDefault()
 
     // Recreate nutrition structure in recipe object
-    let recipeObject = { ...recipe }
+    const recipeObject = { ...recipe }
     recipeObject.nutrition = { calories: recipeObject.calories, protein: recipeObject.protein, carbs: recipeObject.carbs, fat: recipeObject.fat }
     delete recipeObject.calories
     delete recipeObject.protein
@@ -279,9 +278,9 @@ export function EditableRecipe (props) {
       </FormGroup>
       <br /><br />
       <Button type='submit'>Update</Button>
-      { updatedRecipe
+      {updatedRecipe
         ? <i> Recipe updated</i>
-        : null }
+        : null}
       <br /><br />
     </Form>
   )
@@ -296,7 +295,7 @@ export function ReadonlyRecipe (props) {
     )
   }
 
-  let ingredientList = recipe.ingredientList.map((item, index) => {
+  const ingredientList = recipe.ingredientList.map((item, index) => {
     if (item.groupHeader) {
       return <React.Fragment key={index}><strong>{item.groupHeader}: </strong><br /></React.Fragment>
     } else {
@@ -318,15 +317,15 @@ export function ReadonlyRecipe (props) {
         <div className='recipeHeaderText'>
           <h2>{recipe.title}</h2>
           <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a><br />
-          { recipe.servings
+          {recipe.servings
             ? <p>Servings: {recipe.servings}</p>
-            : null }
-          { recipe.prepTime
+            : null}
+          {recipe.prepTime
             ? <p>Prep time: {recipe.prepTime}</p>
-            : null }
-          { recipe.cookingTime
+            : null}
+          {recipe.cookingTime
             ? <p>Cooking time: {recipe.cookingTime}</p>
-            : null }
+            : null}
           {listTags}
         </div>
       </div>

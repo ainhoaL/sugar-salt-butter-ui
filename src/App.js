@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Navbar, NavItem, Nav, NavbarBrand } from 'reactstrap'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import { Recipe } from './Recipe'
-import { Home } from './Home'
+import { Search } from './Search'
 
 class App extends Component {
   constructor (props) {
@@ -25,10 +25,10 @@ class App extends Component {
         client_id: 'CLIENT_ID'
       }).then(() => {
         window.gapi.signin2.render('my-signIn', {
-          'scope': 'profile email',
-          'longtitle': true,
-          'onsuccess': this.onSignIn,
-          'onfailure': this.onFailure
+          scope: 'profile email',
+          longtitle: true,
+          onsuccess: this.onSignIn,
+          onfailure: this.onFailure
         })
       })
     })
@@ -47,7 +47,7 @@ class App extends Component {
         </Navbar>
         <Router>
           <Switch>
-            <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Home {...routeProps} idToken={this.state.idToken} />} />
+            <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Search {...routeProps} idToken={this.state.idToken} />} />
             <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={this.state.idToken} />} />
           </Switch>
         </Router>
