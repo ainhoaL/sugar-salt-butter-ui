@@ -1,59 +1,56 @@
-import React, { Component } from 'react'
+import React, { useEffect } from 'react'
 import { Navbar, NavItem, Nav, NavbarBrand } from 'reactstrap'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import { Recipe } from './Recipe'
 import { Search } from './Search'
 
-class App extends Component {
-  constructor (props) {
-    super(props)
-    this.state = { idToken: null }
-    this.onSignIn = this.onSignIn.bind(this)
-  }
+function App () {
+  const [idToken, setIdToken] = React.useState(null)
 
-  onSignIn (googleUser) {
-    const googleIdToken = googleUser.getAuthResponse().id_token // send this to server
-    this.setState({
-      idToken: googleIdToken
-    })
-  }
-
-  componentDidMount () {
+  useEffect(() => {
     /* istanbul ignore next */
     window.gapi.load('auth2', () => {
       window.gapi.auth2.init({
         client_id: 'CLIENT_ID'
       }).then(() => {
         window.gapi.signin2.render('my-signIn', {
-          scope: 'profile email',
-          longtitle: true,
-          onsuccess: this.onSignIn,
-          onfailure: this.onFailure
+          'scope': 'profile email',
+          'longtitle': true,
+          'onsuccess': onSignIn,
+          'onfailure': onFailure
         })
       })
     })
+  })
+
+  const onSignIn = (googleUser) => {
+    const googleIdToken = googleUser.getAuthResponse().id_token // send this to server
+    setIdToken(googleIdToken)
   }
 
-  render () {
-    return (
-      <div>
-        <Navbar color='light' light expand='md'>
-          <NavbarBrand href='/'>sugar-salt-butter</NavbarBrand>
-          <Nav className='ml-auto' navbar>
-            <NavItem>
-              <div id='my-signIn' className='g-signin2' />
-            </NavItem>
-          </Nav>
-        </Navbar>
-        <Router>
-          <Switch>
-            <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Search {...routeProps} idToken={this.state.idToken} />} />
-            <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={this.state.idToken} />} />
-          </Switch>
-        </Router>
-      </div>
-    )
+  /* istanbul ignore next */
+  const onFailure = (error) => {
+    console.log(error)
   }
+
+  return (
+    <div>
+      <Navbar color='light' light expand='md'>
+        <NavbarBrand href='/'>sugar-salt-butter</NavbarBrand>
+        <Nav className='ml-auto' navbar>
+          <NavItem>
+            <div id='my-signIn' className='g-signin2' />
+          </NavItem>
+        </Nav>
+      </Navbar>
+      <Router>
+        <Switch>
+          <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Search {...routeProps} idToken={idToken} />} />
+          <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={idToken} />} />
+        </Switch>
+      </Router>
+    </div>
+  )
 }
 
 export default App
