@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import { mount } from 'enzyme'
 import { MemoryRouter } from 'react-router'
 import { Recipe } from './Recipe'
+import { Home } from './Home'
 import App from './App'
 
 describe('App component', () => {
@@ -57,5 +58,14 @@ describe('App component', () => {
       </MemoryRouter>
     )
     expect(wrapper.find(Recipe)).toHaveLength(1)
+  })
+
+  it('renders Home component on / path', () => {
+    const wrapper = mount(
+      <MemoryRouter initialEntries={[ '/' ]}>
+        <App />
+      </MemoryRouter>
+    )
+    expect(wrapper.find(Home)).toHaveLength(1)
   })
 })

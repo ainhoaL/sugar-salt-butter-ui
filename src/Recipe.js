@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Button, Form, FormGroup, Label, Input, Container, Row, Col, Badge } from 'reactstrap'
 import qs from 'qs'
+import './Styles.css'
 
 const axios = require('axios')
 
@@ -77,12 +78,12 @@ export function Recipe (props) {
 
           recipe.ingredientList = ingredients
 
-          if (recipe.macros) { // Flatten recipe object
-            recipe.calories = recipe.macros.calories
-            recipe.carbs = recipe.macros.carbs
-            recipe.protein = recipe.macros.protein
-            recipe.fat = recipe.macros.fat
-            delete recipe.macros
+          if (recipe.nutrition) { // Flatten recipe object
+            recipe.calories = recipe.nutrition.calories
+            recipe.carbs = recipe.nutrition.carbs
+            recipe.protein = recipe.nutrition.protein
+            recipe.fat = recipe.nutrition.fat
+            delete recipe.nutrition
           }
         }
         setRecipe(recipe)
@@ -96,8 +97,7 @@ export function Recipe (props) {
   return (
     <Container>
       <Row>
-        <Col sm='12' md={{ size: 8, offset: 2 }}>
-          <img src={recipe.image} alt={recipe.title} style={{ 'maxWidth': '100%', 'maxHeight': 400 }} />
+        <Col sm='12' md={{ size: 10, offset: 1 }}>
           { edit === 'true'
             ? <EditableRecipe initialRecipe={recipe} />
             : <ReadonlyRecipe recipe={recipe} />
@@ -144,9 +144,9 @@ export function EditableRecipe (props) {
   const handleSubmit = (event) => {
     event.preventDefault()
 
-    // Recreate macros structure in recipe object
+    // Recreate nutrition structure in recipe object
     let recipeObject = { ...recipe }
-    recipeObject.macros = { calories: recipeObject.calories, protein: recipeObject.protein, carbs: recipeObject.carbs, fat: recipeObject.fat }
+    recipeObject.nutrition = { calories: recipeObject.calories, protein: recipeObject.protein, carbs: recipeObject.carbs, fat: recipeObject.fat }
     delete recipeObject.calories
     delete recipeObject.protein
     delete recipeObject.carbs
@@ -222,7 +222,7 @@ export function EditableRecipe (props) {
       <FormGroup check>
         <Label check>
           <Input type='checkbox' name='freezable' id='freezableCheck' checked={recipe.freezable} onChange={handleChange} />{' '}
-          Freezes
+          Freezable
         </Label>
       </FormGroup>
       <FormGroup>
@@ -304,34 +304,46 @@ export function ReadonlyRecipe (props) {
     }
   })
 
+  let recipeSource = recipe.source
+  if (recipe.author) {
+    recipeSource += ' by ' + recipe.author
+  }
+
   return (
     <div>
-      <h2>{recipe.title}</h2>
-      <a href={recipe.url} target='blank'><h4>{recipe.source} by {recipe.author}</h4></a>
-      <p>
-        { recipe.servings
-          ? <span>Servings: {recipe.servings}</span>
-          : null }
-        { recipe.prepTime
-          ? <span>Prep time: {recipe.prepTime}</span>
-          : null }
-        { recipe.cookingTime
-          ? <span>Cooking time: {recipe.cookingTime}</span>
-          : null }
-      </p>
-      <div style={{ 'whiteSpace': 'pre-line' }}><strong>Ingredients: </strong><br />
+      <div className='recipeHeaderContainer'>
+        <div className='recipeHeaderImage'>
+          <img src={recipe.image} alt={recipe.title} />
+        </div>
+        <div className='recipeHeaderText'>
+          <h2>{recipe.title}</h2>
+          <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a><br />
+          { recipe.servings
+            ? <p>Servings: {recipe.servings}</p>
+            : null }
+          { recipe.prepTime
+            ? <p>Prep time: {recipe.prepTime}</p>
+            : null }
+          { recipe.cookingTime
+            ? <p>Cooking time: {recipe.cookingTime}</p>
+            : null }
+          {listTags}
+        </div>
+      </div>
+      <br />
+      <p><strong>Ingredients: </strong><br />
         {ingredientList}
-      </div>
-      <div style={{ 'whiteSpace': 'pre-line' }}><strong>Instructions: </strong><br />
+      </p>
+      <p className='recipeParagraph'><strong>Instructions: </strong><br />
         {recipe.instructions}
-      </div>
+      </p>
       { recipe.storage
         ? <p><strong>Storage: </strong><br />
           {recipe.storage}
         </p>
         : null }
       { recipe.notes
-        ? <p><strong>Notes: </strong><br />
+        ? <p className='recipeParagraph'><strong>Notes: </strong><br />
           {recipe.notes}
         </p>
         : null
@@ -343,14 +355,11 @@ export function ReadonlyRecipe (props) {
         : null
       }
       { recipe.calories
-        ? <p>Calories: {recipe.calories}
-          Protein: {recipe.protein}
-          Carbs: {recipe.carbs}
-          Fat: {recipe.carbs}
+        ? <p>Nutritional information: <br />
+            Calories: {recipe.calories} Protein: {recipe.protein} Carbs: {recipe.carbs} Fat: {recipe.carbs}
         </p>
         : null
       }
-      {listTags}
     </div>
   )
 }

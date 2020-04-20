@@ -32,7 +32,7 @@ describe('Recipe component', () => {
         servings: 4,
         prepTime: '20m',
         cookingTime: '30m',
-        macros: { carbs: 90, protein: 68, fat: 24, calories: 700 },
+        nutrition: { carbs: 90, protein: 68, fat: 24, calories: 700 },
         rating: 3,
         freezable: false,
         wantToTry: false,
@@ -287,7 +287,7 @@ describe('Recipe component', () => {
         storage: 'new storage',
         notes: 'new notes',
         equipment: 'new equipment',
-        macros: {
+        nutrition: {
           calories: 'new cals',
           protein: 'new protein',
           carbs: 'new carbs',
