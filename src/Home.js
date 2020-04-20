@@ -46,12 +46,6 @@ export function Home (props) {
 function RecipeCard (props) {
   const linkToRecipe = 'recipes/' + props.data._id
   return (
-  // <Card style={{width:"25%"}}>
-  //   <CardImg top width="100%" src={props.data.image} />
-  //   <CardBody>
-  //     <CardTitle>{props.data.title}</CardTitle>
-  //   </CardBody>
-  // </Card>
     <li className='recipeBox'>
       <a href={linkToRecipe} className='recipeCard'>
         <img src={props.data.image} className='recipeCardImage' alt={props.data.title} /><br />
