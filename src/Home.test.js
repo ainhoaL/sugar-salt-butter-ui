@@ -62,7 +62,7 @@ describe('Home component', () => {
       expect(axios.defaults.headers.common['Authorization']).toEqual('Bearer testUser')
       expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=sugar flour')
 
-      wrapper.update() // Re-render component      
+      wrapper.update() // Re-render component
       expect(wrapper.find('RecipeCard').length).toEqual(0)
     })
   })
