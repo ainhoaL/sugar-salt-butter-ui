@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Button, Form, Input } from 'reactstrap'
 import debounce from 'lodash.debounce'
 import './Styles.css'
 
 const axios = require('axios')
 
-export function Search (props) {
+export function Search ({ idToken }) {
+  const refInput = useRef()
   const [searchString, setSearchString] = useState('')
-  const [searchResults, setSearchResults] = useState(null)
+  const [searchResults, setSearchResults] = useState([])
   const [searchCount, setSearchCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [skip, setSkip] = useState(0)
+
+  useEffect(() => {
+    if (!idToken) return
+    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
+  }, [idToken])
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll)
@@ -20,62 +26,46 @@ export function Search (props) {
   })
 
   useEffect(() => {
-    if (isLoading) {
-      doSearch(skip)
-    }
-  }, [isLoading])
+    if (!searchString) return
+    if (!idToken) return // Do not make a search if we do not have an idToken!
 
-  const handleSearchChange = (event) => {
-    const value = event.target.value
-
-    setSearchString(value)
-  }
+    setIsLoading(true)
+    axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + searchString + '&skip=' + skip)
+      .then((response) => { // TODO: deal with error
+        setSearchResults(prevState => ([...prevState, ...response.data.recipes]))
+        setSearchCount(response.data.count)
+        setIsLoading(false)
+      })
+  }, [searchString, skip, idToken])
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    setSkip(0)
-    setIsLoading(true)
-  }
 
-  const doSearch = (newSkip) => {
-    if (props.idToken && searchString) {
-      axios.defaults.headers.common.Authorization = 'Bearer ' + props.idToken
-      axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + searchString + '&skip=' + newSkip)
-        .then((response) => { // TODO: deal with error
-          const results = newSkip !== 0 ? searchResults.concat(response.data.recipes) : response.data.recipes
-          setSearchResults(results)
-          setSearchCount(response.data.count)
-          setIsLoading(false)
-        })
-    } else {
-      setIsLoading(false)
+    const searchText = refInput.current.value
+    if (searchText) {
+      setSearchResults([])
+      setSkip(0)
+      setSearchString(searchText)
     }
   }
 
   const handleScroll = (event) => {
     debounce((event) => {
-      if (searchResults) {
-        const newSkip = skip + searchResults.length
-        if (isLoading || newSkip >= searchCount) return
-        if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
-          setSkip(newSkip)
-          setIsLoading(true)
-        }
+      const newSkip = searchResults.length
+      if (isLoading || newSkip >= searchCount) return
+      if (window.innerHeight + document.documentElement.scrollTop === document.documentElement.offsetHeight) {
+        setSkip(newSkip)
       }
-    // const { offsetHeight, scrollTop, scrollHeight } = event.target
-    // if (offsetHeight + scrollTop === scrollHeight) {
-    //   this.search(this.state.skip + this.state.searchResults.length)
-    // }
     }, 100)(event)
   }
 
   return (
-    <div onScroll={handleScroll}>
+    <div>
       <Form inline onSubmit={handleSubmit}>
-        <Input type='text' name='search' id='searchText' onChange={handleSearchChange} value={searchString} />
+        <Input type='text' innerRef={refInput} name='search' id='searchText' />
         <Button>Search</Button>
       </Form>
-      {searchResults
+      {searchResults && searchCount
         ? <div><span>{searchCount} results</span>
           <ul className='results'>
             {searchResults.map((recipe) =>
@@ -91,12 +81,6 @@ export function Search (props) {
 function RecipeCard (props) {
   const linkToRecipe = 'recipes/' + props.data._id
   return (
-  // <Card style={{width:"25%"}}>
-  //   <CardImg top width="100%" src={props.data.image} />
-  //   <CardBody>
-  //     <CardTitle>{props.data.title}</CardTitle>
-  //   </CardBody>
-  // </Card>
     <li className='recipeBox'>
       <a href={linkToRecipe} className='recipeCard'>
         <img src={props.data.image} className='recipeCardImage' alt={props.data.title} /><br />

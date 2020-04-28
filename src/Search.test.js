@@ -37,7 +37,7 @@ describe('Search component', () => {
 
       const form = wrapper.find('form')
       const searchText = wrapper.find('#searchText').at(0)
-      searchText.simulate('change', { target: { value: 'sugar flour', name: 'search' } })
+      searchText.getDOMNode().value = 'sugar flour'
       await act(async () => {
         form.simulate('submit')
       })
@@ -56,7 +56,7 @@ describe('Search component', () => {
 
       const form = wrapper.find('form')
       const searchText = wrapper.find('#searchText').at(0)
-      searchText.simulate('change', { target: { value: 'sugar flour', name: 'search' } })
+      searchText.getDOMNode().value = 'sugar flour'
       await act(async () => {
         form.simulate('submit')
       })
@@ -74,7 +74,7 @@ describe('Search component', () => {
 
       const form = wrapper.find('form')
       const searchText = wrapper.find('#searchText').at(0)
-      searchText.simulate('change', { target: { value: 'test', name: 'search' } })
+      searchText.getDOMNode().value = 'test'
       await act(async () => {
         form.simulate('submit')
       })
@@ -89,7 +89,7 @@ describe('Search component', () => {
 
       const form = wrapper.find('form')
       const searchText = wrapper.find('#searchText').at(0)
-      searchText.simulate('change', { target: { value: '', name: 'search' } })
+      searchText.getDOMNode().value = ''
       await act(async () => {
         form.simulate('submit')
       })
@@ -120,7 +120,7 @@ describe('Search component', () => {
 
         const form = wrapper.find('form')
         const searchText = wrapper.find('#searchText').at(0)
-        searchText.simulate('change', { target: { value: 'sugar flour', name: 'search' } })
+        searchText.getDOMNode().value = 'sugar flour'
         await act(async () => {
           form.simulate('submit')
         })
