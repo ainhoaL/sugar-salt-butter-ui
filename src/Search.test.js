@@ -99,6 +99,49 @@ describe('Search component', () => {
       expect(wrapper.find('RecipeCard').length).toEqual(0)
     })
 
+    it('makes a clean search after a search', async () => {
+      axios.get.mockResolvedValue(recipeResults)
+      const wrapper = mount(<Search idToken='testUser' />)
+
+      const form = wrapper.find('form')
+      const searchText = wrapper.find('#searchText').at(0)
+      searchText.getDOMNode().value = 'sugar flour'
+      await act(async () => {
+        form.simulate('submit')
+      })
+      await axios
+      expect(axios.get).toHaveBeenCalledTimes(1)
+      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
+      expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=sugar flour&skip=0')
+
+      wrapper.update() // Re-render component
+      expect(wrapper.find('RecipeCard').length).toEqual(2)
+
+      // Do a new search
+      axios.get.mockResolvedValue({
+        data: {
+          recipes: [{
+            _id: 'recipe5',
+            title: 'test recipe 5',
+            image: 'fakeRecipe5Image.png'
+          }],
+          count: 1
+        }
+      })
+
+      searchText.getDOMNode().value = 'butter'
+      await act(async () => {
+        form.simulate('submit')
+      })
+
+      await axios
+      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
+      expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=butter&skip=0')
+
+      wrapper.update() // Re-render component
+      expect(wrapper.find('RecipeCard').length).toEqual(1)
+    })
+
     describe('scrolling', () => {
       const secondRecipeResults = {
         data: {
