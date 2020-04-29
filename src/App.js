@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import { Navbar, NavItem, Nav, NavbarBrand } from 'reactstrap'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import { Recipe } from './Recipe'
-import { Home } from './Home'
+import { Search } from './Search'
 
 function App () {
   const [idToken, setIdToken] = React.useState(null)
@@ -45,7 +45,7 @@ function App () {
       </Navbar>
       <Router>
         <Switch>
-          <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Home {...routeProps} idToken={idToken} />} />
+          <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Search {...routeProps} idToken={idToken} />} />
           <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={idToken} />} />
         </Switch>
       </Router>

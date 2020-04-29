@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import { mount } from 'enzyme'
 import { MemoryRouter } from 'react-router'
 import { Recipe } from './Recipe'
-import { Home } from './Home'
+import { Search } from './Search'
 import App from './App'
 
 describe('App component', () => {
@@ -62,10 +62,10 @@ describe('App component', () => {
 
   it('renders Home component on / path', () => {
     const wrapper = mount(
-      <MemoryRouter initialEntries={[ '/' ]}>
+      <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>
     )
-    expect(wrapper.find(Home)).toHaveLength(1)
+    expect(wrapper.find(Search)).toHaveLength(1)
   })
 })
