@@ -66,8 +66,8 @@ export function Recipe (props) {
               currentGroup = ingredientGroup
             }
 
-            if (ingredient.quantity) {
-              ingredientString += ingredient.quantity + ' '
+            if (ingredient.displayQuantity) {
+              ingredientString += ingredient.displayQuantity + ' '
             }
             if (ingredient.unit) {
               ingredientString += ingredient.unit + ' '
