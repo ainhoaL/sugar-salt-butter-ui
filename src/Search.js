@@ -42,7 +42,7 @@ export function Search ({ idToken }) {
     event.preventDefault()
 
     const searchText = refInput.current.value
-    if (searchText) {
+    if (searchText !== searchString) {
       setSearchResults([])
       setSkip(0)
       setSearchString(searchText)
