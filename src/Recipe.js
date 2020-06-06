@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { Button, Form, FormGroup, Label, Input, Container, Row, Col, Badge } from 'reactstrap'
 import qs from 'qs'
 import './Styles.css'
+import iconStar from './icons8-star-16.png'
+import iconFilledStar from './icons8-star-filled-16.png'
 
 const axios = require('axios')
 
@@ -160,6 +162,13 @@ export function EditableRecipe (props) {
       })
   }
 
+  const changeRating = (ratingNumber) => {
+    const newRecipe = { ...recipe }
+    newRecipe.rating = ratingNumber
+
+    setRecipe(newRecipe)
+  }
+
   return (
     <Form onSubmit={handleSubmit}>
       <FormGroup>
@@ -181,6 +190,10 @@ export function EditableRecipe (props) {
       <FormGroup>
         <Label for='imageText'>Image Url</Label>
         <Input type='text' name='image' id='imageText' value={recipe.image} onChange={handleChange} />
+      </FormGroup>
+      <FormGroup>
+        <Label for='starRating'>Rating</Label><br />
+        <StarRating id='starRating' currentRating={recipe.rating} changeRating={changeRating} />
       </FormGroup>
       <FormGroup>
         <Label for='tagsText'>Tags</Label>
@@ -316,7 +329,10 @@ export function ReadonlyRecipe (props) {
         </div>
         <div className='recipeHeaderText'>
           <h2>{recipe.title}</h2>
-          <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a><br />
+          <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a>
+          {recipe.rating
+            ? <p><StarRating currentRating={recipe.rating} /></p>
+            : null}
           {recipe.servings
             ? <p>Servings: {recipe.servings}</p>
             : null}
@@ -360,5 +376,32 @@ export function ReadonlyRecipe (props) {
         : null
       }
     </div>
+  )
+}
+
+export function StarRating ({ changeRating, currentRating }) {
+  const stars = []
+  const clickStar = (e) => {
+    e.preventDefault()
+    changeRating(parseInt(e.target.value))
+  }
+
+  for (var index = 1; index <= 5; index++) {
+    const altText = `${index} star`
+    let icon = iconStar
+    if (index <= currentRating) {
+      icon = iconFilledStar
+    }
+    if (!changeRating) {
+      stars.push(<img src={icon} key={index} alt={altText} />)
+    } else {
+      stars.push(<input type='image' src={icon} key={index} value={index} alt={altText} className='starButton' onClick={(e) => clickStar(e)} />)
+    }
+  }
+
+  return (
+    <>
+      {stars}
+    </>
   )
 }
