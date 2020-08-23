@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Form, FormGroup, Label, Input, Container, Row, Col, Badge } from 'reactstrap'
+import { Button, Form, FormGroup, Label, Input, Container, Row, Col, Badge, InputGroup, InputGroupAddon, InputGroupText } from 'reactstrap'
 import qs from 'qs'
 import './Styles.css'
-import iconStar from './icons8-star-16.png'
-import iconFilledStar from './icons8-star-filled-16.png'
+import iconStar from './icons/icons8-star-16.png'
+import iconFilledStar from './icons/icons8-star-filled-16.png'
+import iconServings from './icons/icons8-restaurant-24.png'
 
 const axios = require('axios')
 
@@ -300,6 +301,15 @@ export function EditableRecipe (props) {
 }
 
 export function ReadonlyRecipe (props) {
+  const [lists, setLists] = useState([])
+  const [selectedList, setSelectedList] = useState('')
+  const [listServings, setListServings] = useState(props.recipe.servings)
+  const [newListName, setNewListName] = useState('')
+
+  useEffect(() => {
+    getLists()
+  }, [])
+
   const recipe = props.recipe
   let listTags
   if (recipe && recipe.tags) {
@@ -321,6 +331,64 @@ export function ReadonlyRecipe (props) {
     recipeSource += ' by ' + recipe.author
   }
 
+  const getLists = () => {
+    return axios.get('http://localhost:3050/api/v1/lists')
+      .then((response) => {
+        const dbLists = response.data
+        let listNames = []
+        listNames = dbLists.map((list) => {
+          return { id: list._id, title: list.title, recipesUrl: list.recipes.href }
+        })
+        listNames.push({ id: 'newlist', title: 'New list' })
+        setLists(listNames)
+        setSelectedList(listNames[0].id)
+      })
+  }
+
+  const handleAddToList = (event) => {
+    event.preventDefault()
+
+    const listObject = {
+      recipeId: recipe._id,
+      recipeServings: listServings
+    }
+
+    let recipesUrl
+    if (selectedList !== 'newlist') {
+      lists.forEach((list) => {
+        if (list.id === selectedList) {
+          recipesUrl = list.recipesUrl
+        }
+      })
+      axios.post('http://localhost:3050' + recipesUrl, listObject)
+    } else {
+      const newList = { title: newListName }
+      axios.post('http://localhost:3050/api/v1/lists', newList)
+        .then((response) => {
+          const dbList = response.data
+          axios.post('http://localhost:3050' + dbList.recipes.href, listObject)
+        })
+    }
+  }
+
+  let listOptions = []
+  listOptions = lists.map((list) => {
+    return <option key={list.id} value={list.id}>{list.title}</option>
+  })
+
+  const newListInput = (
+    <Input type='text' name='listName' id='listNameText' value={newListName} onChange={(event) => setNewListName(event.target.value)} placeholder='New list name' />
+  )
+
+  const listServingsInput = (
+    <>
+      <InputGroupAddon addonType='prepend'>
+        <InputGroupText>Servings:</InputGroupText>
+      </InputGroupAddon>
+      <Input type='text' name='listServings' id='servingsText' value={listServings} onChange={(event) => setListServings(event.target.value)} placeholder='Servings to add to list' />
+    </>
+  )
+
   return (
     <div>
       <div className='recipeHeaderContainer'>
@@ -334,7 +402,7 @@ export function ReadonlyRecipe (props) {
             ? <p><StarRating currentRating={recipe.rating} /></p>
             : null}
           {recipe.servings
-            ? <p>Servings: {recipe.servings}</p>
+            ? <p><img src={iconServings} alt='servings' />{recipe.servings}</p>
             : null}
           {recipe.prepTime
             ? <p>Prep time: {recipe.prepTime}</p>
@@ -343,6 +411,23 @@ export function ReadonlyRecipe (props) {
             ? <p>Cooking time: {recipe.cookingTime}</p>
             : null}
           {listTags}
+          <hr />
+          <h6>Add to shopping list</h6>
+          <InputGroup>
+            <InputGroupAddon addonType='prepend'>
+              <InputGroupText>List:</InputGroupText>
+            </InputGroupAddon>
+            <Input type='select' name='listsSelect' id='listsSelect' value={selectedList} onChange={(event) => setSelectedList(event.target.value)}>
+              {listOptions}
+            </Input>
+            {selectedList === 'newlist'
+              ? newListInput
+              : null}
+            {recipe.servings
+              ? listServingsInput
+              : null}
+            <InputGroupAddon addonType='append'><Button type='submit' id='addRecipeToListButton' onClick={handleAddToList}>Add</Button></InputGroupAddon>
+          </InputGroup>
         </div>
       </div>
       <br />

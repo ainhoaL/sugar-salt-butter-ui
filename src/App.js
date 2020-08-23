@@ -3,6 +3,7 @@ import { Navbar, NavItem, Nav, NavbarBrand } from 'reactstrap'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import { Recipe } from './Recipe'
 import { Search } from './Search'
+import { List } from './List'
 
 function App () {
   const [idToken, setIdToken] = React.useState(null)
@@ -14,10 +15,10 @@ function App () {
         client_id: 'CLIENT_ID'
       }).then(() => {
         window.gapi.signin2.render('my-signIn', {
-          'scope': 'profile email',
-          'longtitle': true,
-          'onsuccess': onSignIn,
-          'onfailure': onFailure
+          scope: 'profile email',
+          longtitle: true,
+          onsuccess: onSignIn,
+          onfailure: onFailure
         })
       })
     })
@@ -47,6 +48,7 @@ function App () {
         <Switch>
           <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Search {...routeProps} idToken={idToken} />} />
           <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={idToken} />} />
+          <Route path='/lists/:id' render={/* istanbul ignore next */ (routeProps) => <List {...routeProps} idToken={idToken} />} />
         </Switch>
       </Router>
     </div>
