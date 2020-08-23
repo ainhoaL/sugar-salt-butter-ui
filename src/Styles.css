@@ -71,3 +71,7 @@
 .recipeParagraph {
   white-space: pre-line;
 }
+
+.starButton:focus {
+  outline: none;
+}

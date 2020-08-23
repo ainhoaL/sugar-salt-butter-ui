@@ -21,11 +21,11 @@ describe('Recipe component', () => {
         image: '',
         source: 'test source',
         ingredients: [
-          { quantity: 1, unit: 'g', name: 'test ingredient' },
+          { quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1' },
           { name: 'test ingredient without quantity or unit' },
-          { quantity: 1, unit: 'cup', name: 'test ingredient2', group: 'test group' },
-          { quantity: 1, unit: 'g', name: 'test ingredient3', group: 'test group' },
-          { quantity: 1, name: 'test ingredient without unit', group: 'new group' }
+          { quantity: 1, unit: 'cup', name: 'test ingredient2', group: 'test group', displayQuantity: '1' },
+          { quantity: 1, unit: 'g', name: 'test ingredient3', group: 'test group', displayQuantity: '1' },
+          { quantity: 1, name: 'test ingredient without unit', group: 'new group', displayQuantity: '1' }
         ],
         tags: ['test', 'new'],
         instructions: '',
@@ -48,7 +48,7 @@ describe('Recipe component', () => {
         _id: '123456',
         userId: 'testUser',
         title: 'testRecipe',
-        ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient' }, { name: 'test ingredient without quantity or unit' }],
+        ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1' }, { name: 'test ingredient without quantity or unit' }],
         instructions: ''
       }
     }
@@ -297,6 +297,62 @@ describe('Recipe component', () => {
         freezable: true,
         wantToTry: true,
         done: true
+      }
+
+      expect(axios.put).toHaveBeenCalledTimes(1)
+      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
+      expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/1234', expectedRecipeObject)
+    })
+
+    it('handles changing the rating', async () => {
+      const match = { params: { id: '1234' } }
+      const location = { search: '?edit=true' }
+      let parentWrapper
+
+      await act(async () => {
+        parentWrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
+      })
+
+      await axios
+
+      let wrapper
+      let starsWrapper
+      await act(async () => {
+        parentWrapper.update() // Re-render component
+        wrapper = parentWrapper.find('EditableRecipe').at(0) // get EditableRecipe component
+        starsWrapper = wrapper.find('StarRating').at(0)
+      })
+
+      const starButton = starsWrapper.find('.starButton').at(0)
+      starButton.simulate('click') // click on first star button
+
+      const form = wrapper.find('form')
+      await act(async () => {
+        form.simulate('submit')
+      })
+
+      const expectedRecipeObject = {
+        _id: '1234',
+        userId: 'testUser',
+        title: 'testRecipe',
+        url: '',
+        author: 'test author',
+        image: '',
+        source: 'test source',
+        ingredients: '1 g test ingredient\ntest ingredient without quantity or unit\n# test group\n1 cup test ingredient2\n1 g test ingredient3\n# new group\n1 test ingredient without unit',
+        tags: 'test, new',
+        instructions: '',
+        servings: 4,
+        prepTime: '20m',
+        cookingTime: '30m',
+        nutrition: { carbs: 90, protein: 68, fat: 24, calories: 700 },
+        rating: 1,
+        freezable: false,
+        wantToTry: false,
+        storage: 'fridge',
+        notes: 'new recipe',
+        done: false,
+        equipment: 'pan'
       }
 
       expect(axios.put).toHaveBeenCalledTimes(1)
