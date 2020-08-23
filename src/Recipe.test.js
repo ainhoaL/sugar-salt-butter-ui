@@ -8,12 +8,13 @@ jest.mock('axios')
 
 let recipeData
 let basicRecipeData
+let listsData
 
 describe('Recipe component', () => {
   beforeEach(() => {
     recipeData = {
       data: {
-        _id: '1234',
+        _id: 'testId',
         userId: 'testUser',
         title: 'testRecipe',
         url: '',
@@ -45,7 +46,7 @@ describe('Recipe component', () => {
 
     basicRecipeData = {
       data: {
-        _id: '123456',
+        _id: '1234',
         userId: 'testUser',
         title: 'testRecipe',
         ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1' }, { name: 'test ingredient without quantity or unit' }],
@@ -53,7 +54,33 @@ describe('Recipe component', () => {
       }
     }
 
-    axios.get.mockResolvedValue(recipeData)
+    listsData = {
+      data: [{
+        _id: 'list1',
+        title: 'test shopping list',
+        dateCreated: '12/04',
+        dateLastEdited: '12/08',
+        recipes: {
+          href: '/api/v1/lists/list1/recipes'
+        }
+      }, {
+        _id: 'list2',
+        title: 'test list',
+        dateCreated: '08/04',
+        dateLastEdited: '01/08',
+        recipes: {
+          href: '/api/v1/lists/list2/recipes'
+        }
+      }]
+    }
+
+    axios.get.mockImplementation((url) => {
+      if (url.indexOf('/lists') > -1) {
+        return Promise.resolve(listsData)
+      } else {
+        return Promise.resolve(recipeData)
+      }
+    })
     axios.put.mockResolvedValue()
   })
 
@@ -77,9 +104,10 @@ describe('Recipe component', () => {
     await act(async () => {
       mount(<Recipe location={location} match={match} idToken='testUser' />)
     })
-    expect(axios.get).toHaveBeenCalledTimes(1)
+    expect(axios.get).toHaveBeenCalledTimes(2)
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
     expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId')
+    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists')
   })
 
   it('gets recipe by Id on props updated with idToken', async () => {
@@ -95,14 +123,15 @@ describe('Recipe component', () => {
     await act(async () => {
       wrapper.setProps({ idToken: 'testUser' })
     })
-    expect(axios.get).toHaveBeenCalledTimes(1)
+    expect(axios.get).toHaveBeenCalledTimes(2)
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
     expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId')
+    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists')
   })
 
   describe('when recipe is readonly', () => {
     it('renders readonly recipe when edit is not set', async () => {
-      const match = { params: { id: '1234' } }
+      const match = { params: { id: 'testId' } }
       let wrapper
       await act(async () => {
         wrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
@@ -117,7 +146,7 @@ describe('Recipe component', () => {
     })
 
     it('renders readonly recipe when edit is set to false', async () => {
-      const match = { params: { id: '1234' } }
+      const match = { params: { id: 'testId' } }
       const location = { search: '?edit=false' }
       let wrapper
       await act(async () => {
@@ -133,8 +162,14 @@ describe('Recipe component', () => {
     })
 
     it('renders readonly recipe with basic data', async () => {
-      axios.get.mockResolvedValue(basicRecipeData)
-      const match = { params: { id: '123456' } }
+      axios.get.mockImplementation((url) => {
+        if (url.indexOf('/lists') > -1) {
+          return Promise.resolve(listsData)
+        } else {
+          return Promise.resolve(basicRecipeData)
+        }
+      })
+      const match = { params: { id: '1234' } }
       const location = { search: '?edit=false' }
       let wrapper
       await act(async () => {
@@ -148,11 +183,119 @@ describe('Recipe component', () => {
       expect(wrapper.find('ReadonlyRecipe').length).toEqual(1)
       expect(wrapper.find('EditableRecipe').length).toEqual(0)
     })
+
+    it('renders readonly recipe with basic data and no shopping lists', async () => {
+      axios.get.mockImplementation((url) => {
+        if (url.indexOf('/lists') > -1) {
+          return Promise.resolve({ data: [] })
+        } else {
+          return Promise.resolve(basicRecipeData)
+        }
+      })
+      const match = { params: { id: '1234' } }
+      const location = { search: '?edit=false' }
+      let wrapper
+      await act(async () => {
+        wrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
+      })
+
+      await axios
+      await act(async () => {
+        wrapper.update() // Re-render component
+      })
+      expect(wrapper.find('ReadonlyRecipe').length).toEqual(1)
+      expect(wrapper.find('EditableRecipe').length).toEqual(0)
+      expect(wrapper.find('#listNameText').at(0).length).toEqual(1) // New list is the only option so the input for list name should be visible
+      expect(wrapper.find('#servingsText').at(0).length).toEqual(0) // Recipe has no servings so there is no servings input
+    })
+
+    describe('when adding recipe to list', () => {
+      it('can add recipe to existing list', async () => {
+        axios.post.mockResolvedValue()
+
+        const match = { params: { id: 'testId' } }
+        let parentWrapper
+        await act(async () => {
+          parentWrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
+        })
+
+        await axios
+        let wrapper
+        await act(async () => {
+          parentWrapper.update() // Re-render component
+          wrapper = parentWrapper.find('ReadonlyRecipe').at(0) // get ReadonlyRecipe component
+        })
+
+        const listsSelect = wrapper.find('#listsSelect').at(0)
+        listsSelect.simulate('change', { target: { value: 'list1' } })
+        const servingsText = wrapper.find('#servingsText').at(0)
+        expect(servingsText.props().value).toEqual(4) // Recipe has servings
+        servingsText.simulate('change', { target: { value: '6' } })
+        const addRecipeToListButton = wrapper.find('#addRecipeToListButton').at(0)
+        addRecipeToListButton.simulate('click') // add to shopping list
+
+        const expectedRecipeObject = {
+          recipeId: 'testId',
+          recipeServings: '6'
+        }
+
+        expect(axios.post).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/list1/recipes', expectedRecipeObject)
+      })
+
+      it('can add recipe to new list', async () => {
+        axios.post.mockImplementation((url) => {
+          if (url.indexOf('/recipes') > -1) {
+            return Promise.resolve()
+          } else {
+            return Promise.resolve({ data: { _id: 'list3', title: 'what', recipes: { href: '/api/v1/lists/list3/recipes' } } })
+          }
+        })
+
+        const match = { params: { id: 'testId' } }
+        let parentWrapper
+        await act(async () => {
+          parentWrapper = mount(<Recipe location={location} match={match} idToken='testUser' />)
+        })
+
+        await axios
+        let wrapper
+        await act(async () => {
+          parentWrapper.update() // Re-render component
+          wrapper = parentWrapper.find('ReadonlyRecipe').at(0) // get ReadonlyRecipe component
+        })
+
+        const listsSelect = wrapper.find('#listsSelect').at(0)
+        listsSelect.simulate('change', { target: { value: 'newlist' } })
+
+        await act(async () => {
+          parentWrapper.update() // Re-render component
+          wrapper = parentWrapper.find('ReadonlyRecipe').at(0) // get ReadonlyRecipe component
+        })
+
+        const listNameText = wrapper.find('#listNameText').at(0)
+        listNameText.simulate('change', { target: { value: 'what' } })
+        const servingsText = wrapper.find('#servingsText').at(0)
+        expect(servingsText.props().value).toEqual(4) // Recipe has servings
+        servingsText.simulate('change', { target: { value: '2' } })
+        const addRecipeToListButton = wrapper.find('#addRecipeToListButton').at(0)
+        addRecipeToListButton.simulate('click') // add to shopping list
+
+        const expectedRecipeObject = {
+          recipeId: 'testId',
+          recipeServings: '2'
+        }
+
+        await axios
+
+        expect(axios.post).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists', { title: 'what' })
+        expect(axios.post).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/list3/recipes', expectedRecipeObject)
+      })
+    })
   })
 
   describe('when recipe is editable', () => {
     it('renders form when server returns a recipe', async () => {
-      const match = { params: { id: '1234' } }
+      const match = { params: { id: 'testId' } }
       const location = { search: '?edit=true' }
       let wrapper
       await act(async () => {
@@ -187,7 +330,7 @@ describe('Recipe component', () => {
 
     it('renders editable recipe with basic data', async () => {
       axios.get.mockResolvedValue(basicRecipeData)
-      const match = { params: { id: '123456' } }
+      const match = { params: { id: '1234' } }
       const location = { search: '?edit=true' }
       let wrapper
       await act(async () => {
@@ -203,7 +346,7 @@ describe('Recipe component', () => {
     })
 
     it('handles a form submit and updates recipe in server', async () => {
-      const match = { params: { id: '1234' } }
+      const match = { params: { id: 'testId' } }
       const location = { search: '?edit=true' }
       let parentWrapper
 
@@ -271,7 +414,7 @@ describe('Recipe component', () => {
 
       const expectedRecipeObject =
       {
-        _id: '1234',
+        _id: 'testId',
         userId: 'testUser',
         title: 'new title',
         url: 'new url',
@@ -301,11 +444,11 @@ describe('Recipe component', () => {
 
       expect(axios.put).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/1234', expectedRecipeObject)
+      expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId', expectedRecipeObject)
     })
 
     it('handles changing the rating', async () => {
-      const match = { params: { id: '1234' } }
+      const match = { params: { id: 'testId' } }
       const location = { search: '?edit=true' }
       let parentWrapper
 
@@ -332,7 +475,7 @@ describe('Recipe component', () => {
       })
 
       const expectedRecipeObject = {
-        _id: '1234',
+        _id: 'testId',
         userId: 'testUser',
         title: 'testRecipe',
         url: '',
@@ -357,7 +500,7 @@ describe('Recipe component', () => {
 
       expect(axios.put).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/1234', expectedRecipeObject)
+      expect(axios.put).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId', expectedRecipeObject)
     })
   })
 })

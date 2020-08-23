@@ -4,6 +4,7 @@ import { mount } from 'enzyme'
 import { MemoryRouter } from 'react-router'
 import { Recipe } from './Recipe'
 import { Search } from './Search'
+import { List } from './List'
 import App from './App'
 
 describe('App component', () => {
@@ -36,7 +37,7 @@ describe('App component', () => {
   })
 
   it('renders without crashing when user signs in using google and sets state to correct idToken', async () => {
-    let googleUser = {
+    const googleUser = {
       getBasicProfile: () => {
         return {
           getId: () => { return 'testUser' },
@@ -58,14 +59,27 @@ describe('App component', () => {
       </MemoryRouter>
     )
     expect(wrapper.find(Recipe)).toHaveLength(1)
+    expect(wrapper.find(List)).toHaveLength(0)
   })
 
-  it('renders Home component on / path', () => {
+  it.skip('renders List component on /lists/:id paths', () => {
+    const wrapper = mount(
+      <MemoryRouter initialEntries={['/lists/1234']}>
+        <App />
+      </MemoryRouter>
+    )
+    expect(wrapper.find(List)).toHaveLength(1)
+    expect(wrapper.find(Recipe)).toHaveLength(0)
+  })
+
+  it('renders Search component on / path', () => {
     const wrapper = mount(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>
     )
     expect(wrapper.find(Search)).toHaveLength(1)
+    expect(wrapper.find(List)).toHaveLength(0)
+    expect(wrapper.find(Recipe)).toHaveLength(0)
   })
 })

@@ -50,7 +50,7 @@
 }
 
 .recipeHeaderContainer {
-  overflow: hidden;
+  display: flex;
   padding-top: 2%;
 }
 
@@ -64,8 +64,7 @@
 }
 
 .recipeHeaderText {
-  overflow: hidden;
-  padding-left: 14px;
+  margin-left: 14px;
 }
 
 .recipeParagraph {
@@ -74,4 +73,81 @@
 
 .starButton:focus {
   outline: none;
+}
+
+.listContainer {
+    padding-top: 2%;
+}
+
+.listContainerRecipes {
+    padding-top: 1%;
+}
+
+.listItems .recipeSelected {
+    background-color: #ccccdd;
+}
+
+.listRecipe {
+    list-style-type:none;
+    margin: 0;
+    padding: 0;
+}
+
+.listRecipe li {
+    height:60px;
+    display: flex;
+    align-items: baseline;
+    flex-direction: row;
+    margin: 8px 0 8px 0;
+}
+
+.listRecipe a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.listRecipeImage {
+    width:60px;
+    height:60px;
+    object-fit:cover;
+}
+
+.listRecipeContainer {
+    display: flex;
+}
+
+.listRecipeInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.listRecipeTitle {
+    padding-left: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color:#222;
+}
+
+.listRecipeTitle:focus, .listRecipeTitle:hover, .listRecipeTitle:active {
+    color:#6c757d;
+    text-decoration: none;
+}
+
+.listRecipe .delete {
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    float: right;
+    font-weight: 700;
+    color: #6c757d;
+    margin-left: auto;
+}
+
+.listRecipe .delete:hover, .listRecipe .delete:active, .listRecipe .delete:visited, .listRecipe .delete:focus {
+    background-color: transparent  !important; 
+    border: 0  !important;
+    float: right  !important;
+    font-weight: 700  !important;
+    color: #6c757d  !important;
 }
