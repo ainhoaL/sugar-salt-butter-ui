@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Form, FormGroup, Label, Input, Container, Row, Col, Badge, InputGroup, InputGroupAddon, InputGroupText } from 'reactstrap'
+import { Button, Form, FormGroup, Label, Input, Container, Row, Col, Badge, InputGroup, InputGroupAddon, InputGroupText, Alert } from 'reactstrap'
 import qs from 'qs'
 import './Styles.css'
 import iconStar from './icons/icons8-star-16.png'
@@ -305,6 +305,10 @@ export function ReadonlyRecipe (props) {
   const [selectedList, setSelectedList] = useState('')
   const [listServings, setListServings] = useState(props.recipe.servings)
   const [newListName, setNewListName] = useState('')
+  const [newListId, setNewListId] = useState()
+  const [addedToListAlertVisible, setAddedToListAlertVisible] = useState(false)
+
+  const addedToListAlertOnDismiss = () => setAddedToListAlertVisible(false)
 
   useEffect(() => {
     getLists()
@@ -347,6 +351,7 @@ export function ReadonlyRecipe (props) {
 
   const handleAddToList = (event) => {
     event.preventDefault()
+    addedToListAlertOnDismiss()
 
     const listObject = {
       recipeId: recipe._id,
@@ -361,12 +366,19 @@ export function ReadonlyRecipe (props) {
         }
       })
       axios.post('http://localhost:3050' + recipesUrl, listObject)
+        .then(() => {
+          setAddedToListAlertVisible(true)
+        })
     } else {
       const newList = { title: newListName }
       axios.post('http://localhost:3050/api/v1/lists', newList)
         .then((response) => {
           const dbList = response.data
+          setNewListId(dbList._id)
           axios.post('http://localhost:3050' + dbList.recipes.href, listObject)
+            .then(() => {
+              setAddedToListAlertVisible(true)
+            })
         })
     }
   }
@@ -387,6 +399,20 @@ export function ReadonlyRecipe (props) {
       </InputGroupAddon>
       <Input type='text' name='listServings' id='servingsText' value={listServings} onChange={(event) => setListServings(event.target.value)} placeholder='Servings to add to list' />
     </>
+  )
+
+  const listUrl = selectedList !== 'newlist' ? `/lists/${selectedList}` : `/lists/${newListId}`
+  let selectedListName
+  lists.forEach((list) => {
+    if (list.id === selectedList) {
+      selectedListName = list.title
+    }
+  })
+  const listName = selectedList !== 'newlist' ? selectedListName : newListName
+  const addedToListAlert = (
+    <Alert color='info' isOpen={addedToListAlertVisible} toggle={addedToListAlertOnDismiss}>
+      Recipe added to list <a href={listUrl}>{listName}</a>
+    </Alert>
   )
 
   return (
@@ -428,6 +454,7 @@ export function ReadonlyRecipe (props) {
               : null}
             <InputGroupAddon addonType='append'><Button type='submit' id='addRecipeToListButton' onClick={handleAddToList}>Add</Button></InputGroupAddon>
           </InputGroup>
+          {addedToListAlert}
         </div>
       </div>
       <br />
