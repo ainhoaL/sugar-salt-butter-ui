@@ -232,12 +232,16 @@ describe('Recipe component', () => {
         expect(servingsText.props().value).toEqual(4) // Recipe has servings
         servingsText.simulate('change', { target: { value: '6' } })
         const addRecipeToListButton = wrapper.find('#addRecipeToListButton').at(0)
-        addRecipeToListButton.simulate('click') // add to shopping list
+        await act(async () => {
+          addRecipeToListButton.simulate('click') // add to shopping list
+        })
 
         const expectedRecipeObject = {
           recipeId: 'testId',
           recipeServings: '6'
         }
+
+        await axios
 
         expect(axios.post).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/list1/recipes', expectedRecipeObject)
       })
@@ -278,7 +282,9 @@ describe('Recipe component', () => {
         expect(servingsText.props().value).toEqual(4) // Recipe has servings
         servingsText.simulate('change', { target: { value: '2' } })
         const addRecipeToListButton = wrapper.find('#addRecipeToListButton').at(0)
-        addRecipeToListButton.simulate('click') // add to shopping list
+        await act(async () => {
+          addRecipeToListButton.simulate('click') // add to shopping list
+        })
 
         const expectedRecipeObject = {
           recipeId: 'testId',
