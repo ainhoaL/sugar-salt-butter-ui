@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import { mount } from 'enzyme'
 import { MemoryRouter } from 'react-router'
 import { Recipe } from './Recipe'
-import { Search } from './Search'
+import { Dashboard } from './Dashboard'
 import { List } from './List'
 import App from './App'
 
@@ -72,13 +72,13 @@ describe('App component', () => {
     expect(wrapper.find(Recipe)).toHaveLength(0)
   })
 
-  it('renders Search component on / path', () => {
+  it('renders Dashboard component on / path', () => {
     const wrapper = mount(
       <MemoryRouter initialEntries={['/']}>
         <App />
       </MemoryRouter>
     )
-    expect(wrapper.find(Search)).toHaveLength(1)
+    expect(wrapper.find(Dashboard)).toHaveLength(1)
     expect(wrapper.find(List)).toHaveLength(0)
     expect(wrapper.find(Recipe)).toHaveLength(0)
   })

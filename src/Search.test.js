@@ -2,11 +2,8 @@ import React from 'react'
 import { mount } from 'enzyme'
 import axios from 'axios'
 import { Search } from './Search'
-// import debounce from 'lodash/debounce'
 import { act } from 'react-dom/test-utils'
 
-// Tell jest to mock this import
-// jest.mock('lodash/debounce')
 jest.mock('axios')
 jest.useFakeTimers()
 
@@ -33,14 +30,11 @@ describe('Search component', () => {
   describe('handles a search and sends search to server', () => {
     it('and displays results when there are some', async () => {
       axios.get.mockResolvedValue(recipeResults)
-      const wrapper = mount(<Search idToken='testUser' />)
-
-      const form = wrapper.find('form')
-      const searchText = wrapper.find('#searchText').at(0)
-      searchText.getDOMNode().value = 'sugar flour'
+      let wrapper
       await act(async () => {
-        form.simulate('submit')
+        wrapper = mount(<Search idToken='testUser' searchString='sugar flour' />)
       })
+
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
@@ -52,14 +46,11 @@ describe('Search component', () => {
 
     it('and displays no results when there are none', async () => {
       axios.get.mockResolvedValue({ data: { count: 0, recipes: [] } })
-      const wrapper = mount(<Search idToken='testUser' />)
-
-      const form = wrapper.find('form')
-      const searchText = wrapper.find('#searchText').at(0)
-      searchText.getDOMNode().value = 'sugar flour'
+      let wrapper
       await act(async () => {
-        form.simulate('submit')
+        wrapper = mount(<Search idToken='testUser' searchString='sugar flour' />)
       })
+
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
@@ -70,14 +61,11 @@ describe('Search component', () => {
     })
 
     it('does not make a request to the server if there is no idToken', async () => {
-      const wrapper = mount(<Search />)
-
-      const form = wrapper.find('form')
-      const searchText = wrapper.find('#searchText').at(0)
-      searchText.getDOMNode().value = 'test'
+      let wrapper
       await act(async () => {
-        form.simulate('submit')
+        wrapper = mount(<Search searchString='sugar flour' />)
       })
+
       expect(axios.get).toHaveBeenCalledTimes(0)
 
       wrapper.update() // Re-render component
@@ -85,14 +73,11 @@ describe('Search component', () => {
     })
 
     it('does not make a request to the server if there is no searchString', async () => {
-      const wrapper = mount(<Search idToken='testUser' />)
-
-      const form = wrapper.find('form')
-      const searchText = wrapper.find('#searchText').at(0)
-      searchText.getDOMNode().value = ''
+      let wrapper
       await act(async () => {
-        form.simulate('submit')
+        wrapper = mount(<Search idToken='testUser' />)
       })
+
       expect(axios.get).toHaveBeenCalledTimes(0)
 
       wrapper.update() // Re-render component
@@ -101,14 +86,11 @@ describe('Search component', () => {
 
     it('makes a clean search after a search', async () => {
       axios.get.mockResolvedValue(recipeResults)
-      const wrapper = mount(<Search idToken='testUser' />)
-
-      const form = wrapper.find('form')
-      const searchText = wrapper.find('#searchText').at(0)
-      searchText.getDOMNode().value = 'sugar flour'
+      let wrapper
       await act(async () => {
-        form.simulate('submit')
+        wrapper = mount(<Search idToken='testUser' searchString='sugar flour' />)
       })
+
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
@@ -129,9 +111,8 @@ describe('Search component', () => {
         }
       })
 
-      searchText.getDOMNode().value = 'butter'
       await act(async () => {
-        form.simulate('submit')
+        wrapper.setProps({ searchString: 'butter' })
       })
 
       await axios
@@ -144,14 +125,11 @@ describe('Search component', () => {
 
     it('does not make a request to the server if the searchString has not changed', async () => {
       axios.get.mockResolvedValue(recipeResults)
-      const wrapper = mount(<Search idToken='testUser' />)
-
-      const form = wrapper.find('form')
-      const searchText = wrapper.find('#searchText').at(0)
-      searchText.getDOMNode().value = 'sugar flour'
+      let wrapper
       await act(async () => {
-        form.simulate('submit')
+        wrapper = mount(<Search idToken='testUser' searchString='sugar flour' />)
       })
+
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
@@ -172,9 +150,8 @@ describe('Search component', () => {
         }
       })
 
-      searchText.getDOMNode().value = 'sugar flour'
       await act(async () => {
-        form.simulate('submit')
+        wrapper.setProps({ searchString: 'sugar flour' })
       })
 
       expect(axios.get).toHaveBeenCalledTimes(1)
@@ -200,13 +177,9 @@ describe('Search component', () => {
       }
       it('handles a scroll', async () => {
         axios.get.mockResolvedValue(recipeResults)
-        const wrapper = mount(<Search idToken='testUser' />)
-
-        const form = wrapper.find('form')
-        const searchText = wrapper.find('#searchText').at(0)
-        searchText.getDOMNode().value = 'sugar flour'
+        let wrapper
         await act(async () => {
-          form.simulate('submit')
+          wrapper = mount(<Search idToken='testUser' searchString='sugar flour' />)
         })
 
         await axios
