@@ -28,7 +28,7 @@ export function Search ({ idToken, searchString }) {
     if (!idToken) return // Do not make a search if we do not have an idToken!
 
     setIsLoading(true)
-    axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + searchString + '&skip=' + skip)
+    axios.get('http://localhost:3050/api/v1/recipes?searchString=' + searchString + '&skip=' + skip)
       .then((response) => { // TODO: deal with error
         setSearchResults(prevState => ([...prevState, ...response.data.recipes]))
         setSearchCount(response.data.count)

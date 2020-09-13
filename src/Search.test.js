@@ -7,6 +7,8 @@ import { act } from 'react-dom/test-utils'
 jest.mock('axios')
 jest.useFakeTimers()
 
+const searchUrl = 'http://localhost:3050/api/v1/recipes'
+
 const recipeResults = {
   data: {
     recipes: [{
@@ -38,7 +40,7 @@ describe('Search component', () => {
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=sugar flour&skip=0')
+      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?searchString=sugar flour&skip=0')
 
       wrapper.update() // Re-render component
       expect(wrapper.find('RecipeCard').length).toEqual(2)
@@ -54,7 +56,7 @@ describe('Search component', () => {
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=sugar flour&skip=0')
+      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?searchString=sugar flour&skip=0')
 
       wrapper.update() // Re-render component
       expect(wrapper.find('RecipeCard').length).toEqual(0)
@@ -94,7 +96,7 @@ describe('Search component', () => {
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=sugar flour&skip=0')
+      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?searchString=sugar flour&skip=0')
 
       wrapper.update() // Re-render component
       expect(wrapper.find('RecipeCard').length).toEqual(2)
@@ -117,7 +119,7 @@ describe('Search component', () => {
 
       await axios
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=butter&skip=0')
+      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?searchString=butter&skip=0')
 
       wrapper.update() // Re-render component
       expect(wrapper.find('RecipeCard').length).toEqual(1)
@@ -133,7 +135,7 @@ describe('Search component', () => {
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=sugar flour&skip=0')
+      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?searchString=sugar flour&skip=0')
 
       wrapper.update() // Re-render component
       expect(wrapper.find('RecipeCard').length).toEqual(2)
@@ -185,7 +187,7 @@ describe('Search component', () => {
         await axios
         expect(axios.get).toHaveBeenCalledTimes(1)
         expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-        expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=sugar flour&skip=0')
+        expect(axios.get).toHaveBeenCalledWith(searchUrl + '?searchString=sugar flour&skip=0')
 
         wrapper.update() // Re-render component
         expect(wrapper.find('RecipeCard').length).toEqual(2)
@@ -206,7 +208,7 @@ describe('Search component', () => {
           jest.runAllTimers()
         })
         await axios
-        expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/search?searchString=sugar flour&skip=2')
+        expect(axios.get).toHaveBeenCalledWith(searchUrl + '?searchString=sugar flour&skip=2')
         wrapper.update() // Re-render component
         expect(wrapper.find('RecipeCard').length).toEqual(4)
       })

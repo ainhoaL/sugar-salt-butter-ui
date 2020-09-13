@@ -5,6 +5,7 @@ import { Dashboard } from './Dashboard'
 import { act } from 'react-dom/test-utils'
 
 jest.mock('axios')
+const recipesUrl = 'http://localhost:3050/api/v1/recipes'
 
 describe('Dashboard component', () => {
   let recipes = {
@@ -67,8 +68,8 @@ describe('Dashboard component', () => {
     })
     expect(axios.get).toHaveBeenCalledTimes(2)
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes?limit=8')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes?wantToTry=true&limit=8')
+    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?limit=8')
+    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?wantToTry=true&limit=8')
 
     wrapper.update() // Re-render component
     expect(wrapper.find('RecipeCard').length).toEqual(3)
@@ -88,8 +89,8 @@ describe('Dashboard component', () => {
     })
     expect(axios.get).toHaveBeenCalledTimes(2)
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes?limit=8')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes?wantToTry=true&limit=8')
+    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?limit=8')
+    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?wantToTry=true&limit=8')
   })
 
   it('displays search component if searchString is set', async () => {
