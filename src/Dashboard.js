@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import qs from 'qs'
 import { Container } from 'reactstrap'
 import { RecipeCard } from './RecipeCard'
 import { Search } from './Search'
@@ -6,9 +7,10 @@ import './Styles.css'
 
 const axios = require('axios')
 
-export function Dashboard ({ idToken, searchString }) {
+export function Dashboard ({ idToken, location }) {
   const [recentlyAdded, setRecentlyAdded] = useState([])
   const [wantToTry, setWantToTry] = useState([])
+  const [searchString, setSearchString] = useState('')
 
   useEffect(() => {
     if (!idToken) return
@@ -23,6 +25,11 @@ export function Dashboard ({ idToken, searchString }) {
         setWantToTry(prevState => ([...prevState, ...response.data.recipes]))
       })
   }, [idToken])
+
+  useEffect(() => {
+    const queryObj = qs.parse(location.search.substring(1, location.search.length))
+    setSearchString(queryObj.searchString)
+  }, [location.search])
 
   const dashboard = (
     <Container fluid='xl'>

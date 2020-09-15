@@ -7,7 +7,6 @@ import { Header } from './Header'
 
 function App () {
   const [idToken, setIdToken] = React.useState(null)
-  const [searchString, setSearchString] = React.useState('')
 
   useEffect(() => {
     /* istanbul ignore next */
@@ -38,9 +37,9 @@ function App () {
   return (
     <div>
       <Router>
-        <Header setSearchString={setSearchString} />
+        <Header />
         <Switch>
-          <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Dashboard {...routeProps} idToken={idToken} searchString={searchString} />} />
+          <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Dashboard {...routeProps} idToken={idToken} />} />
           <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={idToken} />} />
           <Route path='/lists/:id' render={/* istanbul ignore next */ (routeProps) => <List {...routeProps} idToken={idToken} />} />
         </Switch>

@@ -1,11 +1,12 @@
 import React from 'react'
-import { mount, shallow } from 'enzyme'
+import { mount } from 'enzyme'
 import axios from 'axios'
 import { Dashboard } from './Dashboard'
 import { act } from 'react-dom/test-utils'
 
 jest.mock('axios')
 const recipesUrl = 'http://localhost:3050/api/v1/recipes'
+const location = { search: '' }
 
 describe('Dashboard component', () => {
   let recipes = {
@@ -55,7 +56,7 @@ describe('Dashboard component', () => {
 
   it('does not get recipes if there is no idToken', () => {
     act(() => {
-      mount(<Dashboard />)
+      mount(<Dashboard location={location} />)
     })
 
     expect(axios.get).toHaveBeenCalledTimes(0)
@@ -64,7 +65,7 @@ describe('Dashboard component', () => {
   it('gets all recipes by userId when receiving an idToken', async () => {
     let wrapper
     await act(async () => {
-      wrapper = mount(<Dashboard idToken='testUser' />)
+      wrapper = mount(<Dashboard idToken='testUser' location={location} />)
     })
     expect(axios.get).toHaveBeenCalledTimes(2)
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
@@ -79,7 +80,7 @@ describe('Dashboard component', () => {
   it('gets all recipes by userId when props updated with idToken', async () => {
     let wrapper
     await act(async () => {
-      wrapper = mount(<Dashboard />)
+      wrapper = mount(<Dashboard location={location} />)
     })
 
     expect(axios.get).toHaveBeenCalledTimes(0)
@@ -93,15 +94,14 @@ describe('Dashboard component', () => {
     expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?wantToTry=true&limit=8')
   })
 
-  it('displays search component if searchString is set', async () => {
+  it('displays search component if querystring has search values', async () => {
     let wrapper
+    let location = { search: '?searchString=cake' }
     await act(async () => {
-      wrapper = shallow(<Dashboard idToken='testUser' searchString='cake' />)
+      wrapper = mount(<Dashboard idToken='testUser' location={location} />)
     })
-    expect(axios.get).toHaveBeenCalledTimes(0)
 
     wrapper.update() // Re-render component
     expect(wrapper.find('Search').length).toEqual(1)
-    expect(wrapper.find('RecipeCard').length).toEqual(0)
   })
 })
