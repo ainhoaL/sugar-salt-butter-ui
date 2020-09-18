@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react'
-import { Navbar, NavItem, Nav, NavbarBrand } from 'reactstrap'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import { Recipe } from './Recipe'
-import { Search } from './Search'
 import { List } from './List'
+import { Dashboard } from './Dashboard'
+import { Header } from './Header'
 
 function App () {
   const [idToken, setIdToken] = React.useState(null)
@@ -36,17 +36,10 @@ function App () {
 
   return (
     <div>
-      <Navbar color='light' light expand='md'>
-        <NavbarBrand href='/'>sugar-salt-butter</NavbarBrand>
-        <Nav className='ml-auto' navbar>
-          <NavItem>
-            <div id='my-signIn' className='g-signin2' />
-          </NavItem>
-        </Nav>
-      </Navbar>
       <Router>
+        <Header />
         <Switch>
-          <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Search {...routeProps} idToken={idToken} />} />
+          <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Dashboard {...routeProps} idToken={idToken} />} />
           <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={idToken} />} />
           <Route path='/lists/:id' render={/* istanbul ignore next */ (routeProps) => <List {...routeProps} idToken={idToken} />} />
         </Switch>

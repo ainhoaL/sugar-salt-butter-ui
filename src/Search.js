@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Button, Form, Input } from 'reactstrap'
+import React, { useState, useEffect } from 'react'
 import debounce from 'lodash.debounce'
+import { RecipeCard } from './RecipeCard'
 import './Styles.css'
 
 const axios = require('axios')
 
-export function Search ({ idToken }) {
-  const refInput = useRef()
-  const [searchString, setSearchString] = useState('')
+export function Search ({ idToken, searchString }) {
   const [searchResults, setSearchResults] = useState([])
   const [searchCount, setSearchCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
@@ -30,7 +28,7 @@ export function Search ({ idToken }) {
     if (!idToken) return // Do not make a search if we do not have an idToken!
 
     setIsLoading(true)
-    axios.get('http://localhost:3050/api/v1/recipes/search?searchString=' + searchString + '&skip=' + skip)
+    axios.get('http://localhost:3050/api/v1/recipes?searchString=' + searchString + '&skip=' + skip)
       .then((response) => { // TODO: deal with error
         setSearchResults(prevState => ([...prevState, ...response.data.recipes]))
         setSearchCount(response.data.count)
@@ -38,16 +36,10 @@ export function Search ({ idToken }) {
       })
   }, [searchString, skip, idToken])
 
-  const handleSubmit = (event) => {
-    event.preventDefault()
-
-    const searchText = refInput.current.value
-    if (searchText !== searchString) {
-      setSearchResults([])
-      setSkip(0)
-      setSearchString(searchText)
-    }
-  }
+  useEffect(() => {
+    setSearchResults([])
+    setSkip(0)
+  }, [searchString])
 
   const handleScroll = (event) => {
     debounce((event) => {
@@ -61,10 +53,6 @@ export function Search ({ idToken }) {
 
   return (
     <div>
-      <Form inline onSubmit={handleSubmit}>
-        <Input type='text' innerRef={refInput} name='search' id='searchText' />
-        <Button>Search</Button>
-      </Form>
       {searchResults && searchCount
         ? <div><span>{searchCount} results</span>
           <ul className='results'>
@@ -75,17 +63,5 @@ export function Search ({ idToken }) {
         </div>
         : null}
     </div>
-  )
-}
-
-function RecipeCard (props) {
-  const linkToRecipe = 'recipes/' + props.data._id
-  return (
-    <li className='recipeBox'>
-      <a href={linkToRecipe} className='recipeCard'>
-        <img src={props.data.image} className='recipeCardImage' alt={props.data.title} /><br />
-        <p className='recipeCardTitle'>{props.data.title}</p>
-      </a>
-    </li>
   )
 }
