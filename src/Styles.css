@@ -1,6 +1,11 @@
+.resultsContainer {
+    padding: 10px 10px 10px 50px;
+}
+
 .results {
     width:100%;
-    display:block
+    display:block;
+    padding:0px;
 }
 
 .recipeBox {
@@ -150,4 +155,27 @@
     float: right  !important;
     font-weight: 700  !important;
     color: #6c757d  !important;
+}
+
+.tagsMenu {
+    border-right:1px solid #E1E3DF;
+}
+
+.tagsMenuList {
+    height: 100%;
+    list-style-type:none;
+    margin: 10px;
+    padding: 0px;
+    overflow: auto;
+}
+
+.tagsMenuList li {
+    width: 100%;
+    height: auto;
+    word-wrap: break-word;
+}
+
+.tagLink, .tagLink:focus, .tagLink:hover, .tagLink:active {
+    color:#fff;
+    text-decoration: none;
 }

@@ -44,6 +44,8 @@ describe('Dashboard component', () => {
     axios.get.mockImplementation((url) => {
       if (url.indexOf('wantToTry') > -1) {
         return Promise.resolve(wantToTryRecipes)
+      } else if (url.indexOf('tags') > -1) {
+        return Promise.resolve({ data: [] })
       } else {
         return Promise.resolve(recipes)
       }
@@ -67,10 +69,9 @@ describe('Dashboard component', () => {
     await act(async () => {
       wrapper = mount(<Dashboard idToken='testUser' location={location} />)
     })
-    expect(axios.get).toHaveBeenCalledTimes(2)
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?limit=8')
-    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?wantToTry=true&limit=8')
+    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?limit=7')
+    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?wantToTry=true&limit=7')
 
     wrapper.update() // Re-render component
     expect(wrapper.find('RecipeCard').length).toEqual(3)
@@ -88,10 +89,9 @@ describe('Dashboard component', () => {
     await act(async () => {
       wrapper.setProps({ idToken: 'testUser' })
     })
-    expect(axios.get).toHaveBeenCalledTimes(2)
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?limit=8')
-    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?wantToTry=true&limit=8')
+    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?limit=7')
+    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?wantToTry=true&limit=7')
   })
 
   it('displays search component if querystring has search values', async () => {
