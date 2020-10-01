@@ -16,7 +16,7 @@ export function SearchForm () {
 
   useEffect(() => {
     const queryObj = qs.parse(window.location.search.substring(1, window.location.search.length))
-    setSearchString(queryObj.searchString)
+    setSearchString(queryObj.searchString || '')
   }, [])
 
   return (
