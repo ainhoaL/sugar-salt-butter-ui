@@ -174,8 +174,3 @@
     height: auto;
     word-wrap: break-word;
 }
-
-.tagLink, .tagLink:focus, .tagLink:hover, .tagLink:active {
-    color:#fff;
-    text-decoration: none;
-}
