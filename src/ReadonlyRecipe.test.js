@@ -111,7 +111,15 @@ describe('ReadonlyRecipe component', () => {
 
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
       expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists')
-      // TODO: check recipe & lists loaded correctly
+
+      // Check lists are loaded:
+      expect(wrapper.find('option').length).toEqual(3)
+      expect(wrapper.find('option').at(0).props().children).toEqual('test shopping list')
+      expect(wrapper.find('option').at(0).props().value).toEqual('list1')
+      expect(wrapper.find('option').at(1).props().children).toEqual('test list')
+      expect(wrapper.find('option').at(1).props().value).toEqual('list2')
+      expect(wrapper.find('option').at(2).props().children).toEqual('New list')
+      expect(wrapper.find('option').at(2).props().value).toEqual('newlist')
     })
 
     it('renders readonly recipe with basic data and no shopping lists', async () => {
@@ -125,9 +133,14 @@ describe('ReadonlyRecipe component', () => {
       await act(async () => {
         wrapper.update() // Re-render component
       })
-      // TODO: check recipe loaded correctly
+
       expect(wrapper.find('#listNameText').at(0).length).toEqual(1) // New list is the only option so the input for list name should be visible
       expect(wrapper.find('#servingsText').at(0).length).toEqual(0) // Recipe has no servings so there is no servings input
+
+      // Check lists are loaded:
+      expect(wrapper.find('option').length).toEqual(1)
+      expect(wrapper.find('option').at(0).props().children).toEqual('New list')
+      expect(wrapper.find('option').at(0).props().value).toEqual('newlist')
     })
 
     describe('when adding recipe to list', () => {
