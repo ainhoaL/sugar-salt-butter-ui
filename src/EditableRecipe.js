@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Button, Form, FormGroup, Label, Input, Row, Col } from 'reactstrap'
 import './Styles.css'
 import { StarRating } from './StarRating'
+import { UserContext } from './UserContext'
 
 const axios = require('axios')
 
@@ -36,6 +37,8 @@ const defaultEditableRecipe = {
 export function EditableRecipe (props) {
   const [recipe, setRecipe] = useState(defaultEditableRecipe)
   const [updatedRecipe, setUpdatedRecipe] = useState(false)
+
+  const idToken = useContext(UserContext)
 
   useEffect(() => {
     const recipe = { ...props.initialRecipe }
@@ -80,7 +83,7 @@ export function EditableRecipe (props) {
     recipeObject.ingredients = recipeObject.ingredientList
     delete recipeObject.ingredientList
 
-    axios.defaults.headers.common.Authorization = 'Bearer ' + props.idToken
+    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
     axios.put('http://localhost:3050/api/v1/recipes/' + recipe._id, recipeObject)
       .then((response) => {
         setUpdatedRecipe(true)

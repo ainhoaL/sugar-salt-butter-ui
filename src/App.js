@@ -4,6 +4,7 @@ import { Recipe } from './Recipe'
 import { List } from './List'
 import { Dashboard } from './Dashboard'
 import { Header } from './Header'
+import { UserContext } from './UserContext'
 
 function App () {
   const [idToken, setIdToken] = React.useState(null)
@@ -39,9 +40,11 @@ function App () {
       <Router>
         <Header />
         <Switch>
-          <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Dashboard {...routeProps} idToken={idToken} />} />
-          <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} idToken={idToken} />} />
-          <Route path='/lists/:id' render={/* istanbul ignore next */ (routeProps) => <List {...routeProps} idToken={idToken} />} />
+          <UserContext.Provider value={idToken}>
+            <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Dashboard {...routeProps} />} />
+            <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} />} />
+            <Route path='/lists/:id' render={/* istanbul ignore next */ (routeProps) => <List {...routeProps} />} />
+          </UserContext.Provider>
         </Switch>
       </Router>
     </div>

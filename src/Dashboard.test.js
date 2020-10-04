@@ -3,6 +3,7 @@ import { mount } from 'enzyme'
 import axios from 'axios'
 import { Dashboard } from './Dashboard'
 import { act } from 'react-dom/test-utils'
+import { UserContext } from './UserContext'
 
 jest.mock('axios')
 const recipesUrl = 'http://localhost:3050/api/v1/recipes'
@@ -58,7 +59,7 @@ describe('Dashboard component', () => {
 
   it('does not get recipes if there is no idToken', () => {
     act(() => {
-      mount(<Dashboard location={location} />)
+      mount(<UserContext.Provider value=''><Dashboard location={location} /></UserContext.Provider>)
     })
 
     expect(axios.get).toHaveBeenCalledTimes(0)
@@ -67,7 +68,7 @@ describe('Dashboard component', () => {
   it('gets all recipes by userId when receiving an idToken', async () => {
     let wrapper
     await act(async () => {
-      wrapper = mount(<Dashboard idToken='testUser' location={location} />)
+      wrapper = mount(<UserContext.Provider value='testUser'><Dashboard location={location} /></UserContext.Provider>)
     })
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
     expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?limit=7')
@@ -78,27 +79,11 @@ describe('Dashboard component', () => {
     expect(wrapper.find('Search').length).toEqual(0)
   })
 
-  it('gets all recipes by userId when props updated with idToken', async () => {
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<Dashboard location={location} />)
-    })
-
-    expect(axios.get).toHaveBeenCalledTimes(0)
-
-    await act(async () => {
-      wrapper.setProps({ idToken: 'testUser' })
-    })
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?limit=7')
-    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?wantToTry=true&limit=7')
-  })
-
   it('displays search component if querystring has search values', async () => {
     let wrapper
     let location = { search: '?searchString=cake' }
     await act(async () => {
-      wrapper = mount(<Dashboard idToken='testUser' location={location} />)
+      wrapper = mount(<UserContext.Provider value='testUser'><Dashboard location={location} /></UserContext.Provider>)
     })
 
     wrapper.update() // Re-render component

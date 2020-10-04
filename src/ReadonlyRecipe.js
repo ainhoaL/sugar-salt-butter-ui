@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Button, Input, Badge, InputGroup, InputGroupAddon, InputGroupText, Alert } from 'reactstrap'
 import './Styles.css'
 import iconServings from './icons/icons8-restaurant-24.png'
 import { StarRating } from './StarRating'
 import { Link } from 'react-router-dom'
+import { UserContext } from './UserContext'
 
 const axios = require('axios')
 
@@ -17,10 +18,12 @@ export function ReadonlyRecipe (props) {
 
   const addedToListAlertOnDismiss = () => setAddedToListAlertVisible(false)
 
+  const idToken = useContext(UserContext)
+
   useEffect(() => {
-    axios.defaults.headers.common.Authorization = 'Bearer ' + props.idToken
+    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
     getLists()
-  }, [props.idToken])
+  }, [idToken])
 
   const recipe = props.recipe
   let listTags

@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import debounce from 'lodash.debounce'
 import { RecipeCard } from './RecipeCard'
 import './Styles.css'
+import { UserContext } from './UserContext'
 
 const axios = require('axios')
 
-export function Search ({ idToken, searchParams }) {
+export function Search ({ searchParams }) {
   const [searchResults, setSearchResults] = useState([])
   const [searchCount, setSearchCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [skip, setSkip] = useState(0)
+  const idToken = useContext(UserContext)
 
   useEffect(() => {
     if (!idToken) return

@@ -3,6 +3,7 @@ import { mount } from 'enzyme'
 import axios from 'axios'
 import { List } from './List'
 import { act } from 'react-dom/test-utils'
+import { UserContext } from './UserContext'
 
 jest.mock('axios')
 
@@ -54,7 +55,7 @@ describe('List component', () => {
   it('does not get list if there is no idToken', () => {
     const match = { params: { id: 'testId' } }
     act(() => {
-      mount(<List match={match} />)
+      mount(<UserContext.Provider value=''><List match={match} /></UserContext.Provider>)
     })
 
     expect(axios.get).toHaveBeenCalledTimes(0)
@@ -64,7 +65,7 @@ describe('List component', () => {
     const match = { params: { id: 'testId' } }
     let wrapper
     await act(async () => {
-      wrapper = mount(<List match={match} idToken='testUser' />)
+      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
     })
 
     await axios
@@ -83,29 +84,12 @@ describe('List component', () => {
     expect(wrapper.find('.listRecipe li').length).toEqual(2) // 2 recipes
   })
 
-  it('gets list by Id on props updated with idToken', async () => {
-    const match = { params: { id: 'testId' } }
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<List match={match} />)
-    })
-
-    expect(axios.get).toHaveBeenCalledTimes(0)
-
-    await act(async () => {
-      wrapper.setProps({ idToken: 'testUser' })
-    })
-    expect(axios.get).toHaveBeenCalledTimes(1)
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/testId')
-  })
-
   it('renders nothing if list does not exist', async () => {
     axios.get.mockResolvedValue({ data: null })
     const match = { params: { id: 'testId' } }
     let wrapper
     await act(async () => {
-      wrapper = mount(<List match={match} idToken='testUser' />)
+      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
     })
     expect(axios.get).toHaveBeenCalledTimes(1)
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
@@ -123,7 +107,7 @@ describe('List component', () => {
     const match = { params: { id: 'testId' } }
     let wrapper
     await act(async () => {
-      wrapper = mount(<List match={match} idToken='testUser' />)
+      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
     })
 
     await axios
@@ -142,7 +126,7 @@ describe('List component', () => {
     const match = { params: { id: 'testId' } }
     let wrapper
     await act(async () => {
-      wrapper = mount(<List match={match} idToken='testUser' />)
+      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
     })
 
     await axios
