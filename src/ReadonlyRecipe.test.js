@@ -4,6 +4,7 @@ import axios from 'axios'
 import { ReadonlyRecipe } from './ReadonlyRecipe'
 import { act } from 'react-dom/test-utils'
 import { Router } from 'react-router-dom'
+import { UserContext } from './UserContext'
 
 jest.mock('axios')
 const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
@@ -101,7 +102,7 @@ describe('ReadonlyRecipe component', () => {
       axios.get.mockResolvedValue(listsData)
       let wrapper
       await act(async () => {
-        wrapper = mount(<Router history={historyMock}><ReadonlyRecipe recipe={basicRecipeData} idToken='testUser' /></Router>)
+        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><ReadonlyRecipe recipe={basicRecipeData} /></UserContext.Provider></Router>)
       })
 
       await axios
@@ -126,7 +127,7 @@ describe('ReadonlyRecipe component', () => {
       axios.get.mockResolvedValue({ data: [] })
       let wrapper
       await act(async () => {
-        wrapper = mount(<Router history={historyMock}><ReadonlyRecipe recipe={basicRecipeData} idToken='testUser' /></Router>)
+        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><ReadonlyRecipe recipe={basicRecipeData} /></UserContext.Provider></Router>)
       })
 
       await axios
@@ -149,7 +150,7 @@ describe('ReadonlyRecipe component', () => {
 
         let wrapper
         await act(async () => {
-          wrapper = mount(<Router history={historyMock}><ReadonlyRecipe recipe={recipeData} idToken='testUser' /></Router>)
+          wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><ReadonlyRecipe recipe={recipeData} /></UserContext.Provider></Router>)
         })
 
         await axios
@@ -188,7 +189,7 @@ describe('ReadonlyRecipe component', () => {
 
         let wrapper
         await act(async () => {
-          wrapper = mount(<Router history={historyMock}><ReadonlyRecipe recipe={recipeData} idToken='testUser' /></Router>)
+          wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><ReadonlyRecipe recipe={recipeData} /></UserContext.Provider></Router>)
         })
 
         await axios

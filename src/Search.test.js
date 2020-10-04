@@ -3,6 +3,7 @@ import { mount } from 'enzyme'
 import axios from 'axios'
 import { Search } from './Search'
 import { act } from 'react-dom/test-utils'
+import { UserContext } from './UserContext'
 
 jest.mock('axios')
 jest.useFakeTimers()
@@ -34,7 +35,7 @@ describe('Search component', () => {
       axios.get.mockResolvedValue(recipeResults)
       let wrapper
       await act(async () => {
-        wrapper = mount(<Search idToken='testUser' searchParams={searchParams} />)
+        wrapper = mount(<UserContext.Provider value='testUser'><Search searchParams={searchParams} /></UserContext.Provider>)
       })
 
       await axios
@@ -50,7 +51,7 @@ describe('Search component', () => {
       axios.get.mockResolvedValue({ data: { count: 0, recipes: [] } })
       let wrapper
       await act(async () => {
-        wrapper = mount(<Search idToken='testUser' searchParams={searchParams} />)
+        wrapper = mount(<UserContext.Provider value='testUser'><Search searchParams={searchParams} /></UserContext.Provider>)
       })
 
       await axios
@@ -65,7 +66,7 @@ describe('Search component', () => {
     it('does not make a request to the server if there is no idToken', async () => {
       let wrapper
       await act(async () => {
-        wrapper = mount(<Search searchParams={searchParams} />)
+        wrapper = mount(<UserContext.Provider value=''><Search searchParams={searchParams} /></UserContext.Provider>)
       })
 
       expect(axios.get).toHaveBeenCalledTimes(0)
@@ -77,7 +78,7 @@ describe('Search component', () => {
     it('does not make a request to the server if there is no searchString', async () => {
       let wrapper
       await act(async () => {
-        wrapper = mount(<Search idToken='testUser' />)
+        wrapper = mount(<UserContext.Provider value='testUser'><Search /></UserContext.Provider>)
       })
 
       expect(axios.get).toHaveBeenCalledTimes(0)
@@ -86,50 +87,11 @@ describe('Search component', () => {
       expect(wrapper.find('RecipeCard').length).toEqual(0)
     })
 
-    it('makes a clean search after a search', async () => {
-      axios.get.mockResolvedValue(recipeResults)
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<Search idToken='testUser' searchParams={searchParams} />)
-      })
-
-      await axios
-      expect(axios.get).toHaveBeenCalledTimes(1)
-      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&searchString=sugar flour')
-
-      wrapper.update() // Re-render component
-      expect(wrapper.find('RecipeCard').length).toEqual(2)
-
-      // Do a new search
-      axios.get.mockResolvedValue({
-        data: {
-          recipes: [{
-            _id: 'recipe5',
-            title: 'test recipe 5',
-            image: 'fakeRecipe5Image.png'
-          }],
-          count: 1
-        }
-      })
-
-      await act(async () => {
-        wrapper.setProps({ searchParams: { searchString: 'butter' } })
-      })
-
-      await axios
-      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&searchString=butter')
-
-      wrapper.update() // Re-render component
-      expect(wrapper.find('RecipeCard').length).toEqual(1)
-    })
-
     it('does not make a request to the server if the searchString has not changed', async () => {
       axios.get.mockResolvedValue(recipeResults)
       let wrapper
       await act(async () => {
-        wrapper = mount(<Search idToken='testUser' searchParams={searchParams} />)
+        wrapper = mount(<UserContext.Provider value='testUser'><Search searchParams={searchParams} /></UserContext.Provider>)
       })
 
       await axios
@@ -181,7 +143,7 @@ describe('Search component', () => {
         axios.get.mockResolvedValue(recipeResults)
         let wrapper
         await act(async () => {
-          wrapper = mount(<Search idToken='testUser' searchParams={searchParams} />)
+          wrapper = mount(<UserContext.Provider value='testUser'><Search searchParams={searchParams} /></UserContext.Provider>)
         })
 
         await axios

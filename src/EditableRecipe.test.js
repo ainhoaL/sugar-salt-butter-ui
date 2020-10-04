@@ -3,6 +3,7 @@ import { mount } from 'enzyme'
 import axios from 'axios'
 import { EditableRecipe } from './EditableRecipe'
 import { act } from 'react-dom/test-utils'
+import { UserContext } from './UserContext'
 
 jest.mock('axios')
 
@@ -74,7 +75,7 @@ describe('EditableRecipe component', () => {
 
   describe('when recipe is editable', () => {
     it('renders form when server returns a recipe', () => {
-      const wrapper = mount(<EditableRecipe initialRecipe={recipeData} idToken='testUser' />)
+      const wrapper = mount(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={recipeData} /></UserContext.Provider>)
 
       const titleText = wrapper.find('#titleText').at(0)
       expect(titleText.props().value).toEqual(recipeData.title)
@@ -123,7 +124,7 @@ describe('EditableRecipe component', () => {
     })
 
     it('renders editable recipe with basic data', () => {
-      const wrapper = mount(<EditableRecipe initialRecipe={basicRecipeData} idToken='testUser' />)
+      const wrapper = mount(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={basicRecipeData} /></UserContext.Provider>)
       const titleText = wrapper.find('#titleText').at(0)
       expect(titleText.props().value).toEqual(recipeData.title)
       const ingredientListText = wrapper.find('#ingredientListText').at(0)
@@ -139,7 +140,7 @@ describe('EditableRecipe component', () => {
     })
 
     it('handles a form submit and updates recipe in server', async () => {
-      const wrapper = mount(<EditableRecipe initialRecipe={recipeData} idToken='testUser' />)
+      const wrapper = mount(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={recipeData} /></UserContext.Provider>)
 
       const titleText = wrapper.find('#titleText').at(0)
       titleText.simulate('change', { target: { value: 'new title', name: 'title' } })
@@ -227,7 +228,7 @@ describe('EditableRecipe component', () => {
     })
 
     it('handles changing the rating', async () => {
-      const wrapper = mount(<EditableRecipe initialRecipe={recipeData} idToken='testUser' />)
+      const wrapper = mount(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={recipeData} /></UserContext.Provider>)
       const starsWrapper = wrapper.find('StarRating').at(0)
 
       const starButton = starsWrapper.find('.starButton').at(0)

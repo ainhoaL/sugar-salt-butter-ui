@@ -4,6 +4,7 @@ import axios from 'axios'
 import { Recipe } from './Recipe'
 import { act } from 'react-dom/test-utils'
 import { Router } from 'react-router-dom'
+import { UserContext } from './UserContext'
 
 jest.mock('axios')
 const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
@@ -148,7 +149,7 @@ describe('Recipe component', () => {
     const match = { params: { id: 'testId' } }
     const location = { search: '' }
     act(() => {
-      mount(<Router history={historyMock}><Recipe location={location} match={match} /></Router>)
+      mount(<Router history={historyMock}><UserContext.Provider value=''><Recipe location={location} match={match} /></UserContext.Provider></Router>)
     })
 
     expect(axios.get).toHaveBeenCalledTimes(0)
@@ -158,7 +159,7 @@ describe('Recipe component', () => {
     const match = { params: { id: 'testId' } }
     const location = { search: '' }
     await act(async () => {
-      mount(<Router history={historyMock}><Recipe location={location} match={match} idToken='testUser' /></Router>)
+      mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
     })
     expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
     expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId')
@@ -169,7 +170,7 @@ describe('Recipe component', () => {
       const match = { params: { id: 'testId' } }
       let wrapper
       await act(async () => {
-        wrapper = mount(<Router history={historyMock}><Recipe location={location} match={match} idToken='testUser' /></Router>)
+        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
       })
 
       await axios
@@ -185,7 +186,7 @@ describe('Recipe component', () => {
       const location = { search: '?edit=false' }
       let wrapper
       await act(async () => {
-        wrapper = mount(<Router history={historyMock}><Recipe location={location} match={match} idToken='testUser' /></Router>)
+        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
       })
 
       await axios
@@ -211,7 +212,7 @@ describe('Recipe component', () => {
       const location = { search: '?edit=false' }
       let wrapper
       await act(async () => {
-        wrapper = mount(<Router history={historyMock}><Recipe location={location} match={match} idToken='testUser' /></Router>)
+        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
       })
 
       await axios
@@ -232,7 +233,7 @@ describe('Recipe component', () => {
       const location = { search: '?edit=true' }
       let wrapper
       await act(async () => {
-        wrapper = mount(<Router history={historyMock}><Recipe location={location} match={match} idToken='testUser' /></Router>)
+        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
       })
 
       await axios
@@ -253,7 +254,7 @@ describe('Recipe component', () => {
       const location = { search: '?edit=true' }
       let wrapper
       await act(async () => {
-        wrapper = mount(<Router history={historyMock}><Recipe location={location} match={match} idToken='testUser' /></Router>)
+        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
       })
 
       await axios
@@ -270,7 +271,7 @@ describe('Recipe component', () => {
       const location = { search: '?edit=true' }
       let wrapper
       await act(async () => {
-        wrapper = mount(<Router history={historyMock}><Recipe location={location} match={match} idToken='testUser' /></Router>)
+        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
       })
 
       await axios

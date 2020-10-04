@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import qs from 'qs'
 import { Container, Row, Col } from 'reactstrap'
 import { RecipeCard } from './RecipeCard'
 import { Search } from './Search'
 import { TagsMenu } from './TagsMenu'
 import './Styles.css'
+import { UserContext } from './UserContext'
 
 const axios = require('axios')
 
-export function Dashboard ({ idToken, location }) {
+export function Dashboard ({ location }) {
   const [recentlyAdded, setRecentlyAdded] = useState([])
   const [wantToTry, setWantToTry] = useState([])
   const [searchParams, setSearchParams] = useState({})
+
+  const idToken = useContext(UserContext)
 
   useEffect(() => {
     if (!idToken) return
@@ -45,13 +48,13 @@ export function Dashboard ({ idToken, location }) {
     </Container>
   )
 
-  const searchComponent = <Search searchParams={searchParams} idToken={idToken} />
+  const searchComponent = <Search searchParams={searchParams} />
 
   return (
     <Container fluid>
       <Row>
         <Col sm='1' md={{ size: 1 }} className='tagsMenu'>
-          <TagsMenu idToken={idToken} />
+          <TagsMenu />
         </Col>
         <Col sm='11' md={{ size: 11 }}>
           {Object.keys(searchParams).length > 0 ? searchComponent : dashboard}

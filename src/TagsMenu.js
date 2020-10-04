@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import './Styles.css'
+import { UserContext } from './UserContext'
+
 const axios = require('axios')
 
-export function TagsMenu ({ idToken }) {
+export function TagsMenu (props) {
   const [tags, setTags] = useState([])
+  const idToken = useContext(UserContext)
 
   useEffect(() => {
     if (!idToken) return

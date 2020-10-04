@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Container, Row, Col, Button } from 'reactstrap'
 import './Styles.css'
 import iconServings from './icons/icons8-restaurant-24.png'
+import { UserContext } from './UserContext'
 
 const axios = require('axios')
 
 export function List (props) {
   const [list, setList] = useState({})
   const [selectedRecipe, setSelectedRecipe] = useState('')
+  const idToken = useContext(UserContext)
 
   useEffect(() => {
+    if (!idToken) return
     const { params } = props.match
-
-    if (props.idToken) {
-      getList(props.idToken, params.id)
-    }
-  }, [props])
+    getList(idToken, params.id)
+  }, [idToken])
 
   const getList = (idToken, listId) => {
     axios.defaults.headers.common.Authorization = 'Bearer ' + idToken

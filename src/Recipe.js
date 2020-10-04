@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Container, Row, Col } from 'reactstrap'
 import qs from 'qs'
 import './Styles.css'
 import { ReadonlyRecipe } from './ReadonlyRecipe'
 import { EditableRecipe } from './EditableRecipe'
+import { UserContext } from './UserContext'
 
 const axios = require('axios')
 
@@ -11,7 +12,11 @@ export function Recipe (props) {
   const [edit, setEdit] = useState(false)
   const [recipe, setRecipe] = useState({})
 
+  const idToken = useContext(UserContext)
+
   useEffect(() => {
+    if (!idToken) return
+
     const { params } = props.match
 
     const { search } = props.location
@@ -20,10 +25,8 @@ export function Recipe (props) {
       setEdit(queryObj.edit)
     }
 
-    if (props.idToken) {
-      getRecipe(props.idToken, params.id)
-    }
-  }, [props])
+    getRecipe(idToken, params.id)
+  }, [props, idToken])
 
   const getRecipe = (idToken, recipeId) => {
     axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
@@ -74,8 +77,8 @@ export function Recipe (props) {
       <Row>
         <Col sm='12' md={{ size: 10, offset: 1 }}>
           {edit === 'true'
-            ? <EditableRecipe initialRecipe={recipe} idToken={props.idToken} />
-            : <ReadonlyRecipe recipe={recipe} idToken={props.idToken} />}
+            ? <EditableRecipe initialRecipe={recipe} />
+            : <ReadonlyRecipe recipe={recipe} />}
         </Col>
       </Row>
     </Container>

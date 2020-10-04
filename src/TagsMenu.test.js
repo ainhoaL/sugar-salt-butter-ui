@@ -4,6 +4,7 @@ import { TagsMenu } from './TagsMenu'
 import axios from 'axios'
 import { act } from 'react-dom/test-utils'
 import { Router } from 'react-router-dom'
+import { UserContext } from './UserContext'
 
 jest.mock('axios')
 const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
@@ -26,7 +27,7 @@ describe('TagsMenu component', () => {
 
   it('does not get tags if there is no idToken', () => {
     act(() => {
-      mount(<TagsMenu />)
+      mount(<UserContext.Provider value=''><TagsMenu /></UserContext.Provider>)
     })
 
     expect(axios.get).toHaveBeenCalledTimes(0)
@@ -37,7 +38,7 @@ describe('TagsMenu component', () => {
     await act(async () => {
       wrapper = mount(
         <Router history={historyMock}>
-          <TagsMenu idToken='testUser' />
+          <UserContext.Provider value='testUser'><TagsMenu /></UserContext.Provider>
         </Router>
       )
     })
@@ -60,7 +61,7 @@ describe('TagsMenu component', () => {
     await act(async () => {
       wrapper = mount(
         <Router history={historyMock}>
-          <TagsMenu idToken='testUser' />
+          <UserContext.Provider value='testUser'><TagsMenu /></UserContext.Provider>
         </Router>
       )
     })
