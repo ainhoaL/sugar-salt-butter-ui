@@ -15,7 +15,7 @@ export function List (props) {
     if (!idToken) return
     const { params } = props.match
     getList(idToken, params.id)
-  }, [idToken])
+  }, [idToken, props.match])
 
   const getList = (idToken, listId) => {
     axios.defaults.headers.common.Authorization = 'Bearer ' + idToken

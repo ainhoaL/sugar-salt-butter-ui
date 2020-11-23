@@ -12,6 +12,7 @@ const axios = require('axios')
 export function Dashboard ({ location }) {
   const [recentlyAdded, setRecentlyAdded] = useState([])
   const [wantToTry, setWantToTry] = useState([])
+  const [seasonal, setSeasonal] = useState([])
   const [searchParams, setSearchParams] = useState({})
 
   const idToken = useContext(UserContext)
@@ -28,6 +29,12 @@ export function Dashboard ({ location }) {
       .then((response) => { // TODO: deal with error
         setWantToTry(prevState => ([...prevState, ...response.data.recipes]))
       })
+    const nowDate = new Date()
+    const seasonMonth = nowDate.getMonth() + 1
+    axios.get('http://localhost:3050/api/v1/recipes?season=' + seasonMonth + '&limit=7')
+      .then((response) => { // TODO: deal with error
+        setSeasonal(prevState => ([...prevState, ...response.data.recipes]))
+      })
   }, [idToken])
 
   useEffect(() => {
@@ -40,6 +47,10 @@ export function Dashboard ({ location }) {
       <span>Recently added:</span>
       <ul className='results'>
         {recentlyAdded.map((recipe) => <RecipeCard key={recipe._id} data={recipe} />)}
+      </ul>
+      <span>In season this month:</span>
+      <ul className='results'>
+        {seasonal.map((recipe) => <RecipeCard key={recipe._id} data={recipe} />)}
       </ul>
       <span>Want to try:</span>
       <ul className='results'>
