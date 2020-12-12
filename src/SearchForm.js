@@ -11,7 +11,7 @@ export function SearchForm () {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    history.push('?searchString=' + searchString)
+    history.push('/?searchString=' + searchString)
   }
 
   useEffect(() => {

@@ -19,6 +19,6 @@ describe('SearchForm component', () => {
     form.simulate('submit')
 
     expect(historyMock.push).toHaveBeenCalledTimes(1)
-    expect(historyMock.push).toHaveBeenCalledWith('?searchString=sugar flour')
+    expect(historyMock.push).toHaveBeenCalledWith('/?searchString=sugar flour')
   })
 })
