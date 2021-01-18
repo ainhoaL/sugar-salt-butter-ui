@@ -134,7 +134,7 @@ export function ReadonlyRecipe (props) {
           <img src={recipe.image} alt={recipe.title} />
         </div>
         <div className='recipeHeaderText'>
-          <h2>{recipe.title}</h2><Button type='submit' onClick={() => props.editRecipe(true)}>Edit</Button>
+          <h2>{recipe.title}</h2><Button type='submit' className='editRecipe' onClick={() => props.editRecipe(true)}>Edit</Button>
           <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a>
           {recipe.rating
             ? <p><StarRating currentRating={recipe.rating} /></p>

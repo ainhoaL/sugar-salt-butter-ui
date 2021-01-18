@@ -218,7 +218,7 @@ export function EditableRecipe (props) {
         </Label>
       </FormGroup>
       <br /><br />
-      <Button type='submit'>Update</Button><Button onClick={() => props.editRecipe(false)}>Cancel</Button>
+      <Button type='submit'>Update</Button><Button className='cancelEdit' onClick={() => props.editRecipe(false)}>Cancel</Button>
       <br />
       {updatedRecipe
         ? <i> Recipe updated</i>
