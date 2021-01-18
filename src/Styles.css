@@ -174,8 +174,3 @@
     word-wrap: break-word;
 }
 
-.searchSpinner {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-}
