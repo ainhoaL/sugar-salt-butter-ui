@@ -134,7 +134,7 @@ export function ReadonlyRecipe (props) {
           <img src={recipe.image} alt={recipe.title} />
         </div>
         <div className='recipeHeaderText'>
-          <h2>{recipe.title}</h2>
+          <h2>{recipe.title}</h2><Button type='submit' onClick={() => props.editRecipe(true)}>Edit</Button>
           <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a>
           {recipe.rating
             ? <p><StarRating currentRating={recipe.rating} /></p>
@@ -194,7 +194,7 @@ export function ReadonlyRecipe (props) {
         : null
       }
       { recipe.calories
-        ? <p>Nutritional information: <br />
+        ? <p><strong>Nutritional information: </strong><br />
             Calories: {recipe.calories} Protein: {recipe.protein} Carbs: {recipe.carbs} Fat: {recipe.carbs}
         </p>
         : null
