@@ -162,7 +162,6 @@
 }
 
 .tagsMenuList {
-    height: 100%;
     list-style-type:none;
     margin: 10px;
     padding: 0px;
@@ -174,3 +173,4 @@
     height: auto;
     word-wrap: break-word;
 }
+

@@ -28,7 +28,7 @@ export function Search ({ searchParams }) {
   useEffect(() => {
     if (!searchParams) return
     if (!idToken) return // Do not make a search if we do not have an idToken!
-    let searchHref = 'skip=' + skip
+    let searchHref = 'skip=' + skip + '&limit=70'
     for (const param of Object.entries(searchParams)) {
       searchHref += '&' + param[0] + '=' + param[1]
     }
