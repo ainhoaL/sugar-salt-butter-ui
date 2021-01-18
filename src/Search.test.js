@@ -41,7 +41,7 @@ describe('Search component', () => {
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&searchString=sugar flour')
+      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&limit=70&searchString=sugar flour')
 
       wrapper.update() // Re-render component
       expect(wrapper.find('RecipeCard').length).toEqual(2)
@@ -57,7 +57,7 @@ describe('Search component', () => {
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&searchString=sugar flour')
+      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&limit=70&searchString=sugar flour')
 
       wrapper.update() // Re-render component
       expect(wrapper.find('RecipeCard').length).toEqual(0)
@@ -97,7 +97,7 @@ describe('Search component', () => {
       await axios
       expect(axios.get).toHaveBeenCalledTimes(1)
       expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&searchString=sugar flour')
+      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&limit=70&searchString=sugar flour')
 
       wrapper.update() // Re-render component
       expect(wrapper.find('RecipeCard').length).toEqual(2)
@@ -149,7 +149,7 @@ describe('Search component', () => {
         await axios
         expect(axios.get).toHaveBeenCalledTimes(1)
         expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-        expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&searchString=sugar flour')
+        expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&limit=70&searchString=sugar flour')
 
         wrapper.update() // Re-render component
         expect(wrapper.find('RecipeCard').length).toEqual(2)
@@ -170,7 +170,7 @@ describe('Search component', () => {
           jest.runAllTimers()
         })
         await axios
-        expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=2&searchString=sugar flour')
+        expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=2&limit=70&searchString=sugar flour')
         wrapper.update() // Re-render component
         expect(wrapper.find('RecipeCard').length).toEqual(4)
       })

@@ -10,7 +10,7 @@ const recipesUrl = 'http://localhost:3050/api/v1/recipes'
 const location = { search: '' }
 
 describe('Dashboard component', () => {
-  let recipes = {
+  const recipes = {
     data: {
       count: 2,
       recipes: [{
@@ -28,7 +28,7 @@ describe('Dashboard component', () => {
     }
   }
 
-  let wantToTryRecipes = {
+  const wantToTryRecipes = {
     data: {
       count: 1,
       recipes: [{
@@ -81,7 +81,7 @@ describe('Dashboard component', () => {
 
   it('displays search component if querystring has search values', async () => {
     let wrapper
-    let location = { search: '?searchString=cake' }
+    const location = { search: '?searchString=cake' }
     await act(async () => {
       wrapper = mount(<UserContext.Provider value='testUser'><Dashboard location={location} /></UserContext.Provider>)
     })

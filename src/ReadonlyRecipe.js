@@ -176,29 +176,18 @@ export function ReadonlyRecipe (props) {
       <p className='recipeParagraph'><strong>Instructions: </strong><br />
         {recipe.instructions}
       </p>
-      { recipe.storage
-        ? <p><strong>Storage: </strong><br />
-          {recipe.storage}
-        </p>
-        : null }
-      { recipe.notes
-        ? <p className='recipeParagraph'><strong>Notes: </strong><br />
-          {recipe.notes}
-        </p>
-        : null
-      }
-      { recipe.equipment
-        ? <p><strong>Equipment: </strong><br />
-          {recipe.equipment}
-        </p>
-        : null
-      }
-      { recipe.calories
-        ? <p><strong>Nutritional information: </strong><br />
-            Calories: {recipe.calories} Protein: {recipe.protein} Carbs: {recipe.carbs} Fat: {recipe.carbs}
-        </p>
-        : null
-      }
+      {recipe.storage
+        ? <p><strong>Storage: </strong><br />{recipe.storage}</p>
+        : null}
+      {recipe.notes
+        ? <p className='recipeParagraph'><strong>Notes: </strong><br />{recipe.notes}</p>
+        : null}
+      {recipe.equipment
+        ? <p><strong>Equipment: </strong><br />{recipe.equipment}</p>
+        : null}
+      {recipe.calories
+        ? <p><strong>Nutritional information: </strong><br />Calories: {recipe.calories} Protein: {recipe.protein} Carbs: {recipe.carbs} Fat: {recipe.carbs}</p>
+        : null}
     </div>
   )
 }

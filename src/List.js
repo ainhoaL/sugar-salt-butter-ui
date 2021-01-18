@@ -58,7 +58,7 @@ export function List (props) {
               <a href={recipe.href} className='listRecipeTitle'>
                 <span>{recipe.title}</span>
               </a>
-              { recipe.servings ? <span><img src={iconServings} alt='servings' />{recipe.servings}</span> : null }
+              {recipe.servings ? <span><img src={iconServings} alt='servings' />{recipe.servings}</span> : null}
             </div>
           </div>
           <Button className='delete' onClick={() => deleteRecipeFromList(recipe)}>x</Button>
@@ -79,7 +79,7 @@ export function List (props) {
           </div>
         </Col>
         <Col sm='3' md={{ size: 4 }}>
-          { recipesList && recipesList.length > 0
+          {recipesList && recipesList.length > 0
             ? (
               <div className='position-fixed listContainerRecipes'>
                 <strong>Recipes:</strong>
@@ -88,7 +88,7 @@ export function List (props) {
                 </ul>
               </div>
             )
-            : null }
+            : null}
         </Col>
       </Row>
     </Container>
