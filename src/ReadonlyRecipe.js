@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from 'react'
 import { Button, Input, Badge, InputGroup, InputGroupAddon, InputGroupText, Alert } from 'reactstrap'
 import './Styles.css'
 import iconServings from './icons/icons8-restaurant-24.png'
+import iconEdit from './icons/icons8-edit-24.png'
+import iconDelete from './icons/icons8-trash-can-24.png'
 import { StarRating } from './StarRating'
 import { Link } from 'react-router-dom'
 import { UserContext } from './UserContext'
@@ -15,6 +17,7 @@ export function ReadonlyRecipe (props) {
   const [newListName, setNewListName] = useState('')
   const [newListId, setNewListId] = useState()
   const [addedToListAlertVisible, setAddedToListAlertVisible] = useState(false)
+  const [deletedRecipe, setDeletedRecipe] = useState(false)
 
   const addedToListAlertOnDismiss = () => setAddedToListAlertVisible(false)
 
@@ -95,6 +98,13 @@ export function ReadonlyRecipe (props) {
     }
   }
 
+  const handleDeleteRecipe = () => {
+    return axios.delete('http://localhost:3050/api/v1/recipes/' + recipe._id)
+      .then(() => {
+        setDeletedRecipe(true)
+      })
+  }
+
   let listOptions = []
   listOptions = lists.map((list) => {
     return <option key={list.id} value={list.id}>{list.title}</option>
@@ -134,7 +144,13 @@ export function ReadonlyRecipe (props) {
           <img src={recipe.image} alt={recipe.title} />
         </div>
         <div className='recipeHeaderText'>
-          <h2>{recipe.title}</h2><Button type='submit' className='editRecipe' onClick={() => props.editRecipe(true)}>Edit</Button>
+          <h2>{recipe.title}
+            <span className='recipeActionsMenu'>
+              <input type='image' src={iconEdit} alt='edit recipe' className='recipeAction' onClick={() => props.editRecipe(true)} />
+              <input type='image' src={iconDelete} alt='delete recipe' className='recipeAction' onClick={handleDeleteRecipe} />
+            </span>
+          </h2>
+          {deletedRecipe ? <i> Recipe deleted</i> : null}
           <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a>
           {recipe.rating
             ? <p><StarRating currentRating={recipe.rating} /></p>

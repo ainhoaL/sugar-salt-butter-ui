@@ -91,6 +91,7 @@ describe('ReadonlyRecipe component', () => {
 
     axios.get.mockResolvedValue(listsData)
     axios.put.mockResolvedValue()
+    axios.delete.mockResolvedValue()
   })
 
   afterEach(() => {
@@ -236,9 +237,28 @@ describe('ReadonlyRecipe component', () => {
     await act(async () => {
       wrapper.update() // Re-render component
     })
-    const editButton = wrapper.find('.editRecipe').at(0)
+    const editButton = wrapper.find('.recipeAction').at(0)
     editButton.simulate('click') // edit recipe
     expect(editRecipeMock).toHaveBeenCalledTimes(1)
     expect(editRecipeMock).toHaveBeenCalledWith(true)
+  })
+
+  it('tries to delete recipe when clicking delete button', async () => {
+    let wrapper
+    await act(async () => {
+      wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><ReadonlyRecipe recipe={basicRecipeData} /></UserContext.Provider></Router>)
+    })
+
+    await axios
+    await act(async () => {
+      wrapper.update() // Re-render component
+    })
+    const deleteButton = wrapper.find('.recipeAction').at(1)
+    await act(async () => {
+      deleteButton.simulate('click') // delete recipe
+    })
+    await axios
+    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
+    expect(axios.delete).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/' + basicRecipeData._id)
   })
 })

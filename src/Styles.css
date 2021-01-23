@@ -76,6 +76,14 @@
   white-space: pre-line;
 }
 
+.recipeActionsMenu {
+  margin-left: 12px;
+}
+
+.recipeAction {
+  margin-right: 2px;
+}
+
 .starButton:focus {
   outline: none;
 }
