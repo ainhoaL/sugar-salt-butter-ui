@@ -22,7 +22,7 @@ export function Recipe (props) {
     const { search } = props.location
     if (search) {
       const queryObj = qs.parse(search.substring(1, search.length))
-      setEdit(queryObj.edit)
+      setEdit(queryObj.edit === 'true')
     }
 
     getRecipe(idToken, params.id)
@@ -76,9 +76,9 @@ export function Recipe (props) {
     <Container>
       <Row>
         <Col sm='12' md={{ size: 10, offset: 1 }}>
-          {edit === 'true'
-            ? <EditableRecipe initialRecipe={recipe} />
-            : <ReadonlyRecipe recipe={recipe} />}
+          {edit
+            ? <EditableRecipe initialRecipe={recipe} editRecipe={setEdit} />
+            : <ReadonlyRecipe recipe={recipe} editRecipe={setEdit} />}
         </Col>
       </Row>
     </Container>
