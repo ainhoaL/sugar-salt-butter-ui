@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import { Recipe } from './Recipe'
 import { List } from './List'
+import { Lists } from './Lists'
 import { Dashboard } from './Dashboard'
 import { Header } from './Header'
 import { UserContext } from './UserContext'
@@ -23,7 +24,7 @@ function App () {
         })
       })
     })
-  })
+  }, [])
 
   const onSignIn = (googleUser) => {
     const googleIdToken = googleUser.getAuthResponse().id_token // send this to server
@@ -43,6 +44,7 @@ function App () {
           <UserContext.Provider value={idToken}>
             <Route exact path='/' render={/* istanbul ignore next */ (routeProps) => <Dashboard {...routeProps} />} />
             <Route path='/recipes/:id' render={/* istanbul ignore next */ (routeProps) => <Recipe {...routeProps} />} />
+            <Route exact path='/lists' render={/* istanbul ignore next */ (routeProps) => <Lists {...routeProps} />} />
             <Route path='/lists/:id' render={/* istanbul ignore next */ (routeProps) => <List {...routeProps} />} />
           </UserContext.Provider>
         </Switch>

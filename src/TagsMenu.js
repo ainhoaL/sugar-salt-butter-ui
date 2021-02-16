@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { Link } from 'react-router-dom'
+import { Badge } from 'reactstrap'
 import './Styles.css'
 import { UserContext } from './UserContext'
 
@@ -21,7 +22,7 @@ export function TagsMenu (props) {
 
   const listTags = tags.map((tag) => {
     const tagHref = '/?tags=' + tag._id
-    return <li key={tag._id}><Link to={tagHref}><strong>{tag._id}</strong> ({tag.count})</Link></li>
+    return <li key={tag._id}><Link to={tagHref}><strong>{tag._id}</strong> <Badge color='light'>{tag.count}</Badge></Link></li>
   })
 
   return (
