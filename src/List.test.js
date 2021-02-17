@@ -104,7 +104,8 @@ describe('List component', () => {
   })
 
   it('renders no items if list has no items', async () => {
-    axios.get.mockResolvedValue({ data: {
+    axios.get.mockResolvedValue({
+      data: {
         _id: 'testId',
         userId: 'testUser',
         title: 'test shopping list',
@@ -112,7 +113,8 @@ describe('List component', () => {
         recipes: {
           href: '/api/v1/lists/testId/recipes'
         }
-      } })
+      }
+    })
     const match = { params: { id: 'testId' } }
     let wrapper
     await act(async () => {
