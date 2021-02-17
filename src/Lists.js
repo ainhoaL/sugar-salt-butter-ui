@@ -21,7 +21,7 @@ export function Lists (props) {
     axios.get('http://localhost:3050/api/v1/lists')
       .then((response) => { // TODO: deal with error
         const lists = response.data
-        if (lists.length === 1) {
+        if (lists.length === 1) { // Redirect to list page if there is only one
           history.push('/lists/' + lists[0]._id)
         } else {
           setLists(lists)

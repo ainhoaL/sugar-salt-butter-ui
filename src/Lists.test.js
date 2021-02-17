@@ -63,10 +63,10 @@ describe('Lists component', () => {
       wrapper.update() // Re-render component
     })
 
-    expect(wrapper.find('ListGroupItem').length).toEqual(2) // 1 list
+    expect(wrapper.find('ListGroupItem').length).toEqual(2) // 2 lists
   })
 
-  it('renders nothing if there are no lists', async () => {
+  it('renders no items if there are no lists', async () => {
     axios.get.mockResolvedValue({ data: [] })
     let wrapper
     await act(async () => {

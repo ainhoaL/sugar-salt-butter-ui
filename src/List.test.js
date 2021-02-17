@@ -103,7 +103,7 @@ describe('List component', () => {
     expect(wrapper.find('.listContainer').length).toEqual(0) // No list to display
   })
 
-  it('renders nothing if list has no items', async () => {
+  it('renders no items if list has no items', async () => {
     axios.get.mockResolvedValue({ data: {
         _id: 'testId',
         userId: 'testUser',
