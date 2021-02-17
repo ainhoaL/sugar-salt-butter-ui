@@ -49,10 +49,10 @@ describe('TagsMenu component', () => {
     expect(wrapper.find('li').length).toEqual(2) // 2 tags
     const firstLink = wrapper.find('Link').at(0)
     expect(firstLink.props().to).toEqual('/?tags=meat') // First tag Link directs to correct tag
-    expect(firstLink.text()).toEqual('meat (20)')
+    expect(firstLink.text()).toEqual('meat 20')
     const secondLink = wrapper.find('Link').at(1)
     expect(secondLink.props().to).toEqual('/?tags=vegetarian')
-    expect(secondLink.text()).toEqual('vegetarian (1)')
+    expect(secondLink.text()).toEqual('vegetarian 1')
   })
 
   it('displays no tags if none are returned', async () => {

@@ -103,6 +103,39 @@ describe('List component', () => {
     expect(wrapper.find('.listContainer').length).toEqual(0) // No list to display
   })
 
+  it('renders no items if list has no items', async () => {
+    axios.get.mockResolvedValue({
+      data: {
+        _id: 'testId',
+        userId: 'testUser',
+        title: 'test shopping list',
+        items: [],
+        recipes: {
+          href: '/api/v1/lists/testId/recipes'
+        }
+      }
+    })
+    const match = { params: { id: 'testId' } }
+    let wrapper
+    await act(async () => {
+      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    })
+    expect(axios.get).toHaveBeenCalledTimes(1)
+    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
+    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/testId')
+
+    await axios
+    await act(async () => {
+      wrapper.update() // Re-render component
+    })
+
+    expect(wrapper.find('.listContainer').length).toEqual(1)
+    const titleHeader = wrapper.find('.listContainer h4').at(0)
+    expect(titleHeader.text()).toEqual('test shopping list') // list title
+    expect(wrapper.find('.listItems li').length).toEqual(0) // 5 items
+    expect(wrapper.find('.listRecipe li').length).toEqual(0) // 2 recipes
+  })
+
   it('can delete recipe from list', async () => {
     const match = { params: { id: 'testId' } }
     let wrapper
@@ -113,7 +146,7 @@ describe('List component', () => {
     await axios
     await act(async () => {
       wrapper.update() // Re-render component
-      const deleteButton = wrapper.find('.delete').at(0)
+      const deleteButton = wrapper.find({ 'aria-label': 'delete recipe' }).at(0)
       deleteButton.simulate('click') // Delete first recipe
     })
 
@@ -150,5 +183,44 @@ describe('List component', () => {
       wrapper.update() // Re-render component
     })
     expect(wrapper.find('.recipeSelected').length).toEqual(0) // 0 selected items
+  })
+
+  it('can delete item from list', async () => {
+    const match = { params: { id: 'testId' } }
+    let wrapper
+    await act(async () => {
+      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    })
+
+    await axios
+    await act(async () => {
+      wrapper.update() // Re-render component
+      const deleteButton = wrapper.find({ 'aria-label': 'delete item' }).at(0)
+      deleteButton.simulate('click') // Delete first recipe
+    })
+
+    await axios
+    expect(axios.delete).toHaveBeenCalledTimes(1)
+    expect(axios.delete).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/testId/items/item1')
+  })
+
+  it('tries to delete list when clicking delete button', async () => {
+    const match = { params: { id: 'testId' } }
+    let wrapper
+    await act(async () => {
+      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    })
+
+    await axios
+    await act(async () => {
+      wrapper.update() // Re-render component
+    })
+    const deleteButton = wrapper.find('.action').at(0)
+    await act(async () => {
+      deleteButton.simulate('click') // delete recipe
+    })
+    await axios
+    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
+    expect(axios.delete).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/testId')
   })
 })

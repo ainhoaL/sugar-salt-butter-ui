@@ -237,7 +237,7 @@ describe('ReadonlyRecipe component', () => {
     await act(async () => {
       wrapper.update() // Re-render component
     })
-    const editButton = wrapper.find('.recipeAction').at(0)
+    const editButton = wrapper.find('.action').at(0)
     editButton.simulate('click') // edit recipe
     expect(editRecipeMock).toHaveBeenCalledTimes(1)
     expect(editRecipeMock).toHaveBeenCalledWith(true)
@@ -253,7 +253,7 @@ describe('ReadonlyRecipe component', () => {
     await act(async () => {
       wrapper.update() // Re-render component
     })
-    const deleteButton = wrapper.find('.recipeAction').at(1)
+    const deleteButton = wrapper.find('.action').at(1)
     await act(async () => {
       deleteButton.simulate('click') // delete recipe
     })

@@ -145,12 +145,12 @@ export function ReadonlyRecipe (props) {
         </div>
         <div className='recipeHeaderText'>
           <h2>{recipe.title}
-            <span className='recipeActionsMenu'>
-              <input type='image' src={iconEdit} alt='edit recipe' className='recipeAction' onClick={() => props.editRecipe(true)} />
-              <input type='image' src={iconDelete} alt='delete recipe' className='recipeAction' onClick={handleDeleteRecipe} />
+            <span className='actionsMenu'>
+              <input type='image' src={iconEdit} alt='edit recipe' className='action' onClick={() => props.editRecipe(true)} />
+              <input type='image' src={iconDelete} alt='delete recipe' className='action' onClick={handleDeleteRecipe} />
             </span>
           </h2>
-          {deletedRecipe ? <i> Recipe deleted</i> : null}
+          {deletedRecipe ? <i>Recipe deleted</i> : null}
           <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a>
           {recipe.rating
             ? <p><StarRating currentRating={recipe.rating} /></p>
