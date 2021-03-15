@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom'
 import { Badge } from 'reactstrap'
 import './Styles.css'
 import { UserContext } from './UserContext'
-
-const axios = require('axios')
+import { api } from './services/api'
 
 export function TagsMenu (props) {
   const [tags, setTags] = useState([])
@@ -12,9 +11,7 @@ export function TagsMenu (props) {
 
   useEffect(() => {
     if (!idToken) return
-    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
-
-    axios.get('http://localhost:3050/api/v1/tags')
+    api.getTags(idToken)
       .then((response) => { // TODO: deal with error
         setTags(response.data)
       })

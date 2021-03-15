@@ -7,8 +7,7 @@ import iconDelete from './icons/icons8-trash-can-24.png'
 import { StarRating } from './StarRating'
 import { Link } from 'react-router-dom'
 import { UserContext } from './UserContext'
-
-const axios = require('axios')
+import { api } from './services/api'
 
 export function ReadonlyRecipe (props) {
   const [lists, setLists] = useState([])
@@ -24,8 +23,17 @@ export function ReadonlyRecipe (props) {
   const idToken = useContext(UserContext)
 
   useEffect(() => {
-    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
-    getLists()
+    api.getLists(idToken)
+      .then((response) => {
+        const dbLists = response.data
+        let listNames = []
+        listNames = dbLists.map((list) => {
+          return { id: list._id, title: list.title, recipesUrl: list.recipes.href }
+        })
+        listNames.push({ id: 'newlist', title: 'New list' })
+        setLists(listNames)
+        setSelectedList(listNames[0].id)
+      })
   }, [idToken])
 
   const recipe = props.recipe
@@ -50,20 +58,6 @@ export function ReadonlyRecipe (props) {
     recipeSource += ' by ' + recipe.author
   }
 
-  const getLists = () => {
-    return axios.get('http://localhost:3050/api/v1/lists')
-      .then((response) => {
-        const dbLists = response.data
-        let listNames = []
-        listNames = dbLists.map((list) => {
-          return { id: list._id, title: list.title, recipesUrl: list.recipes.href }
-        })
-        listNames.push({ id: 'newlist', title: 'New list' })
-        setLists(listNames)
-        setSelectedList(listNames[0].id)
-      })
-  }
-
   const handleAddToList = (event) => {
     event.preventDefault()
     addedToListAlertOnDismiss()
@@ -73,24 +67,18 @@ export function ReadonlyRecipe (props) {
       recipeServings: listServings
     }
 
-    let recipesUrl
     if (selectedList !== 'newlist') {
-      lists.forEach((list) => {
-        if (list.id === selectedList) {
-          recipesUrl = list.recipesUrl
-        }
-      })
-      axios.post('http://localhost:3050' + recipesUrl, listObject)
+      return api.addRecipeToList(idToken, selectedList, listObject)
         .then(() => {
           setAddedToListAlertVisible(true)
         })
     } else {
       const newList = { title: newListName }
-      axios.post('http://localhost:3050/api/v1/lists', newList)
+      return api.createList(idToken, newList)
         .then((response) => {
           const dbList = response.data
           setNewListId(dbList._id)
-          axios.post('http://localhost:3050' + dbList.recipes.href, listObject)
+          return api.addRecipeToList(idToken, dbList._id, listObject)
             .then(() => {
               setAddedToListAlertVisible(true)
             })
@@ -99,7 +87,7 @@ export function ReadonlyRecipe (props) {
   }
 
   const handleDeleteRecipe = () => {
-    return axios.delete('http://localhost:3050/api/v1/recipes/' + recipe._id)
+    return api.deleteRecipe(idToken, recipe._id)
       .then(() => {
         setDeletedRecipe(true)
       })
@@ -151,7 +139,7 @@ export function ReadonlyRecipe (props) {
             </span>
           </h2>
           {deletedRecipe ? <i>Recipe deleted</i> : null}
-          <a href={recipe.url} target='blank'><h6>{recipeSource}</h6></a>
+          <h6><a href={recipe.url} target='blank'>{recipeSource}</a></h6>
           {recipe.rating
             ? <p><StarRating currentRating={recipe.rating} /></p>
             : null}
@@ -180,29 +168,29 @@ export function ReadonlyRecipe (props) {
             {recipe.servings
               ? listServingsInput
               : null}
-            <InputGroupAddon addonType='append'><Button type='submit' id='addRecipeToListButton' onClick={handleAddToList}>Add</Button></InputGroupAddon>
+            <InputGroupAddon addonType='append'><Button type='submit' id='addRecipeToListButton' aria-label='add recipe to list' onClick={handleAddToList}>Add</Button></InputGroupAddon>
           </InputGroup>
           {addedToListAlert}
         </div>
       </div>
       <br />
-      <p><strong>Ingredients: </strong><br />
+      <p data-testid='ingredientsContainer'><strong>Ingredients: </strong><br />
         {ingredientList}
-      </p>
-      <p className='recipeParagraph'><strong>Instructions: </strong><br />
+      </p>s
+      <p className='recipeParagraph' data-testid='instructionsContainer'><strong>Instructions: </strong><br />
         {recipe.instructions}
       </p>
       {recipe.storage
-        ? <p><strong>Storage: </strong><br />{recipe.storage}</p>
+        ? <p data-testid='storageContainer'><strong>Storage: </strong><br />{recipe.storage}</p>
         : null}
       {recipe.notes
-        ? <p className='recipeParagraph'><strong>Notes: </strong><br />{recipe.notes}</p>
+        ? <p className='recipeParagraph' data-testid='notesContainer'><strong>Notes: </strong><br />{recipe.notes}</p>
         : null}
       {recipe.equipment
-        ? <p><strong>Equipment: </strong><br />{recipe.equipment}</p>
+        ? <p data-testid='equipmentContainer'><strong>Equipment: </strong><br />{recipe.equipment}</p>
         : null}
       {recipe.calories
-        ? <p><strong>Nutritional information: </strong><br />Calories: {recipe.calories} Protein: {recipe.protein} Carbs: {recipe.carbs} Fat: {recipe.carbs}</p>
+        ? <p data-testid='nutritionContainer'><strong>Nutritional information: </strong><br />Calories: {recipe.calories} Protein: {recipe.protein} Carbs: {recipe.carbs} Fat: {recipe.fat}</p>
         : null}
     </div>
   )

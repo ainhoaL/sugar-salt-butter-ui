@@ -1,22 +1,24 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import axios from 'axios'
 import { Lists } from './Lists'
-import { act } from 'react-dom/test-utils'
-import { Router } from 'react-router-dom'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { UserContext } from './UserContext'
+import { Router } from 'react-router-dom'
+import { api } from './services/api'
 
-jest.mock('axios')
+jest.mock('./services/api')
+
 const historyMock = { push: jest.fn(), location: {}, listen: jest.fn() }
 
 let listsData
+const testUserId = 'testUser'
 
 describe('Lists component', () => {
   beforeEach(() => {
     listsData = {
       data: [{
         _id: 'testId',
-        userId: 'testUser',
+        userId: testUserId,
         title: 'test shopping list',
         items: [
           { _id: 'item1', quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1', recipeId: 'recipe1', servings: 1 },
@@ -24,7 +26,7 @@ describe('Lists component', () => {
         ]
       }, {
         _id: 'testId2',
-        userId: 'testUser',
+        userId: testUserId,
         title: 'test shopping list 2',
         items: [
           { _id: 'item2', name: 'test ingredient without quantity or unit', recipeId: 'recipe1', servings: 1 }
@@ -32,8 +34,8 @@ describe('Lists component', () => {
       }]
     }
 
-    axios.get.mockResolvedValue(listsData)
-    axios.delete.mockResolvedValue()
+    api.getLists.mockResolvedValue(listsData)
+    api.deleteList.mockResolvedValue()
   })
 
   afterEach(() => {
@@ -41,54 +43,36 @@ describe('Lists component', () => {
   })
 
   it('does not get lists if there is no idToken', () => {
-    act(() => {
-      mount(<UserContext.Provider value=''><Lists /></UserContext.Provider>)
-    })
+    render(<UserContext.Provider value=''><Lists /></UserContext.Provider>)
 
-    expect(axios.get).toHaveBeenCalledTimes(0)
+    expect(api.getLists).toHaveBeenCalledTimes(0)
   })
 
   it('gets list when receiving an idToken and displays lists', async () => {
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<UserContext.Provider value='testUser'><Lists /></UserContext.Provider>)
-    })
+    render(<UserContext.Provider value='testUser'><Lists /></UserContext.Provider>)
 
-    await axios
-    expect(axios.get).toHaveBeenCalledTimes(1)
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists')
+    expect(api.getLists).toHaveBeenCalledTimes(1)
+    expect(api.getLists).toHaveBeenCalledWith(testUserId)
 
-    await act(async () => {
-      wrapper.update() // Re-render component
-    })
-
-    expect(wrapper.find('ListGroupItem').length).toEqual(2) // 2 lists
+    await waitFor(() => screen.getByText('test shopping list')) // list title
+    expect(screen.getByText('test shopping list 2')).toBeInTheDocument()
   })
 
   it('renders no items if there are no lists', async () => {
-    axios.get.mockResolvedValue({ data: [] })
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<UserContext.Provider value='testUser'><Lists /></UserContext.Provider>)
-    })
-    expect(axios.get).toHaveBeenCalledTimes(1)
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists')
+    api.getLists.mockResolvedValue({ data: [] })
+    render(<UserContext.Provider value='testUser'><Lists /></UserContext.Provider>)
 
-    await axios
-    await act(async () => {
-      wrapper.update() // Re-render component
-    })
+    expect(api.getLists).toHaveBeenCalledTimes(1)
+    expect(api.getLists).toHaveBeenCalledWith(testUserId)
 
-    expect(wrapper.find('ListGroupItem').length).toEqual(0) // No lists to display
+    await waitFor(() => expect(screen.queryByText('test shopping list')).not.toBeInTheDocument()) // no lists to display
   })
 
   it('redirects to list page if there is only one list', async () => {
-    axios.get.mockResolvedValue({
+    api.getLists.mockResolvedValue({
       data: [{
         _id: 'testId',
-        userId: 'testUser',
+        userId: testUserId,
         title: 'test shopping list',
         items: [
           { _id: 'item1', quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1', recipeId: 'recipe1', servings: 1 },
@@ -96,31 +80,21 @@ describe('Lists component', () => {
         ]
       }]
     })
-    await act(async () => {
-      mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Lists /></UserContext.Provider></Router>)
-    })
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><Lists /></UserContext.Provider></Router>)
 
-    await axios
-    expect(historyMock.push).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(historyMock.push).toHaveBeenCalledTimes(1))
     expect(historyMock.push).toHaveBeenCalledWith('/lists/testId')
   })
 
   it('can delete list', async () => {
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<UserContext.Provider value='testUser'><Lists /></UserContext.Provider>)
-    })
+    render(<UserContext.Provider value='testUser'><Lists /></UserContext.Provider>)
 
-    await axios
-    await act(async () => {
-      wrapper.update() // Re-render component
-      const deleteButton = wrapper.find('.deleteListItem').at(0)
-      deleteButton.simulate('click') // Delete first list
-    })
+    await waitFor(() => userEvent.click(screen.getAllByLabelText('delete list')[0])) // click delete button
 
-    await axios
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.delete).toHaveBeenCalledTimes(1)
-    expect(axios.delete).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/testId')
+    expect(api.deleteList).toHaveBeenCalledTimes(1)
+    expect(api.deleteList).toHaveBeenCalledWith(testUserId, 'testId')
+
+    expect(api.getLists).toHaveBeenCalledTimes(2)
+    expect(api.getLists).toHaveBeenCalledWith(testUserId)
   })
 })

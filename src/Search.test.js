@@ -1,14 +1,14 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import axios from 'axios'
 import { Search } from './Search'
 import { act } from 'react-dom/test-utils'
+import { render, screen, waitFor } from '@testing-library/react'
 import { UserContext } from './UserContext'
+import { api } from './services/api'
 
-jest.mock('axios')
-jest.useFakeTimers()
+jest.mock('./services/api')
+jest.useFakeTimers('modern')
 
-const searchUrl = 'http://localhost:3050/api/v1/recipes'
+const testUserId = 'testUser'
 const searchParams = { searchString: 'sugar flour' }
 const recipeResults = {
   data: {
@@ -32,96 +32,40 @@ describe('Search component', () => {
 
   describe('handles a search and sends search to server', () => {
     it('and displays results when there are some', async () => {
-      axios.get.mockResolvedValue(recipeResults)
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<UserContext.Provider value='testUser'><Search searchParams={searchParams} /></UserContext.Provider>)
-      })
+      api.searchRecipes.mockResolvedValue(recipeResults)
+      render(<UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider>)
 
-      await axios
-      expect(axios.get).toHaveBeenCalledTimes(1)
-      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&limit=70&searchString=sugar flour')
+      expect(api.searchRecipes).toHaveBeenCalledTimes(1)
+      expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'skip=0&limit=70&searchString=sugar flour')
 
-      wrapper.update() // Re-render component
-      expect(wrapper.find('RecipeCard').length).toEqual(2)
+      await waitFor(() => expect(screen.getByText('test recipe 1')).toBeInTheDocument())
+      expect(screen.getByText('test recipe 2')).toBeInTheDocument()
     })
 
     it('and displays no results when there are none', async () => {
-      axios.get.mockResolvedValue({ data: { count: 0, recipes: [] } })
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<UserContext.Provider value='testUser'><Search searchParams={searchParams} /></UserContext.Provider>)
-      })
+      api.searchRecipes.mockResolvedValue({ data: { count: 0, recipes: [] } })
+      render(<UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider>)
 
-      await axios
-      expect(axios.get).toHaveBeenCalledTimes(1)
-      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&limit=70&searchString=sugar flour')
+      expect(api.searchRecipes).toHaveBeenCalledTimes(1)
+      expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'skip=0&limit=70&searchString=sugar flour')
 
-      wrapper.update() // Re-render component
-      expect(wrapper.find('RecipeCard').length).toEqual(0)
+      await waitFor(() => expect(screen.queryByText('test recipe 1')).not.toBeInTheDocument())
     })
 
     it('does not make a request to the server if there is no idToken', async () => {
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<UserContext.Provider value=''><Search searchParams={searchParams} /></UserContext.Provider>)
-      })
+      render(<UserContext.Provider value=''><Search searchParams={searchParams} /></UserContext.Provider>)
 
-      expect(axios.get).toHaveBeenCalledTimes(0)
+      expect(api.searchRecipes).toHaveBeenCalledTimes(0)
 
-      wrapper.update() // Re-render component
-      expect(wrapper.find('RecipeCard').length).toEqual(0)
+      await waitFor(() => expect(screen.queryByText('test recipe 1')).not.toBeInTheDocument())
     })
 
     it('does not make a request to the server if there is no searchString', async () => {
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<UserContext.Provider value='testUser'><Search /></UserContext.Provider>)
-      })
+      render(<UserContext.Provider value={testUserId}><Search /></UserContext.Provider>)
 
-      expect(axios.get).toHaveBeenCalledTimes(0)
+      expect(api.searchRecipes).toHaveBeenCalledTimes(0)
 
-      wrapper.update() // Re-render component
-      expect(wrapper.find('RecipeCard').length).toEqual(0)
-    })
-
-    it('does not make a request to the server if the searchString has not changed', async () => {
-      axios.get.mockResolvedValue(recipeResults)
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<UserContext.Provider value='testUser'><Search searchParams={searchParams} /></UserContext.Provider>)
-      })
-
-      await axios
-      expect(axios.get).toHaveBeenCalledTimes(1)
-      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&limit=70&searchString=sugar flour')
-
-      wrapper.update() // Re-render component
-      expect(wrapper.find('RecipeCard').length).toEqual(2)
-
-      // Do a new search
-      axios.get.mockResolvedValue({
-        data: {
-          recipes: [{
-            _id: 'recipe5',
-            title: 'test recipe 5',
-            image: 'fakeRecipe5Image.png'
-          }],
-          count: 1
-        }
-      })
-
-      await act(async () => {
-        wrapper.setProps({ searchString: 'sugar flour' })
-      })
-
-      expect(axios.get).toHaveBeenCalledTimes(1)
-
-      wrapper.update() // Re-render component
-      expect(wrapper.find('RecipeCard').length).toEqual(2)
+      await waitFor(() => expect(screen.queryByText('test recipe 1')).not.toBeInTheDocument())
     })
 
     describe('scrolling', () => {
@@ -139,22 +83,33 @@ describe('Search component', () => {
           count: 10
         }
       }
+
+      const smallRecipeResults = {
+        data: {
+          recipes: [{
+            _id: 'recipe1',
+            title: 'test recipe 1',
+            image: 'fakeRecipe1Image.png'
+          }, {
+            _id: 'recipe2',
+            title: 'test recipe 2',
+            image: 'fakeRecipe2Image.png'
+          }],
+          count: 2
+        }
+      }
+
       it('handles a scroll', async () => {
-        axios.get.mockResolvedValue(recipeResults)
-        let wrapper
-        await act(async () => {
-          wrapper = mount(<UserContext.Provider value='testUser'><Search searchParams={searchParams} /></UserContext.Provider>)
-        })
+        api.searchRecipes.mockResolvedValue(recipeResults)
+        render(<UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider>)
 
-        await axios
-        expect(axios.get).toHaveBeenCalledTimes(1)
-        expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-        expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=0&limit=70&searchString=sugar flour')
+        expect(api.searchRecipes).toHaveBeenCalledTimes(1)
+        expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'skip=0&limit=70&searchString=sugar flour')
 
-        wrapper.update() // Re-render component
-        expect(wrapper.find('RecipeCard').length).toEqual(2)
+        await waitFor(() => expect(screen.getByText('test recipe 1')).toBeInTheDocument())
+        expect(screen.getByText('test recipe 2')).toBeInTheDocument()
 
-        axios.get.mockResolvedValue(secondRecipeResults)
+        api.searchRecipes.mockResolvedValue(secondRecipeResults)
 
         // scroll does not get to the bottom of the page and does not send a request
         window.innerHeight = 100
@@ -163,16 +118,41 @@ describe('Search component', () => {
           jest.runAllTimers()
         })
 
+        expect(api.searchRecipes).not.toHaveBeenCalledWith(testUserId, 'skip=2&limit=70&searchString=sugar flour')
+
         // scroll gets to bottom of the page and sends a request for more items
         window.innerHeight = 0
         await act(async () => {
           window.dispatchEvent(new Event('scroll'))
           jest.runAllTimers()
         })
-        await axios
-        expect(axios.get).toHaveBeenCalledWith(searchUrl + '?skip=2&limit=70&searchString=sugar flour')
-        wrapper.update() // Re-render component
-        expect(wrapper.find('RecipeCard').length).toEqual(4)
+
+        expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'skip=2&limit=70&searchString=sugar flour')
+
+        await waitFor(() => expect(screen.getByText('test recipe 3')).toBeInTheDocument())
+        expect(screen.getByText('test recipe 1')).toBeInTheDocument()
+        expect(screen.getByText('test recipe 2')).toBeInTheDocument()
+        expect(screen.getByText('test recipe 4')).toBeInTheDocument()
+      })
+
+      it('when scrolling it does not request more recipes if there are no more', async () => {
+        api.searchRecipes.mockResolvedValue(smallRecipeResults)
+        render(<UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider>)
+
+        expect(api.searchRecipes).toHaveBeenCalledTimes(1)
+        expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'skip=0&limit=70&searchString=sugar flour')
+
+        await waitFor(() => expect(screen.getByText('test recipe 1')).toBeInTheDocument())
+        expect(screen.getByText('test recipe 2')).toBeInTheDocument()
+
+        // scroll gets to bottom of the page does not send a request for more items
+        window.innerHeight = 0
+        await act(async () => {
+          window.dispatchEvent(new Event('scroll'))
+          jest.runAllTimers()
+        })
+
+        expect(api.searchRecipes).not.toHaveBeenCalledWith(testUserId, 'skip=2&limit=70&searchString=sugar flour')
       })
     })
   })

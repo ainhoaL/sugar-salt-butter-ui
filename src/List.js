@@ -4,8 +4,7 @@ import './Styles.css'
 import iconServings from './icons/icons8-restaurant-24.png'
 import iconDelete from './icons/icons8-trash-can-24.png'
 import { UserContext } from './UserContext'
-
-const axios = require('axios')
+import { api } from './services/api'
 
 export function List (props) {
   const [list, setList] = useState(null)
@@ -20,30 +19,29 @@ export function List (props) {
   }, [idToken, props.match])
 
   const getList = (idToken, listId) => {
-    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
-    axios.get('http://localhost:3050/api/v1/lists/' + listId)
+    return api.getList(idToken, listId)
       .then((response) => { // TODO: deal with error
         const list = response.data
         setList(list)
       })
   }
 
-  const deleteRecipeFromList = (recipe) => {
-    axios.delete('http://localhost:3050' + recipe.href)
+  const deleteRecipeFromList = (recipeId) => {
+    return api.deleteRecipeFromList(idToken, list._id, recipeId)
       .then(() => { // TODO: deal with error
         getList(idToken, list._id)
       })
   }
 
   const deleteItem = (itemId) => {
-    axios.delete('http://localhost:3050/api/v1/lists/' + list._id + '/items/' + itemId)
+    return api.deleteItemFromList(idToken, list._id, itemId)
       .then(() => { // TODO: deal with error
         getList(idToken, list._id)
       })
   }
 
   const deleteList = () => {
-    return axios.delete('http://localhost:3050/api/v1/lists/' + list._id)
+    return api.deleteList(idToken, list._id)
       .then(() => {
         setDeletedList(true)
       })
@@ -78,7 +76,7 @@ export function List (props) {
               {recipe.servings ? <span><img src={iconServings} alt='servings' />{recipe.servings}</span> : null}
             </div>
           </div>
-          <Button className='deleteListItem' aria-label='delete recipe' onClick={() => deleteRecipeFromList(recipe)}>x</Button>
+          <Button className='deleteListItem' aria-label='delete recipe' onClick={() => deleteRecipeFromList(recipe._id)}>x</Button>
         </ListGroupItem>
       )
     })
