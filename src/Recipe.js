@@ -5,8 +5,7 @@ import './Styles.css'
 import { ReadonlyRecipe } from './ReadonlyRecipe'
 import { EditableRecipe } from './EditableRecipe'
 import { UserContext } from './UserContext'
-
-const axios = require('axios')
+import { api } from './services/api'
 
 export function Recipe (props) {
   const [edit, setEdit] = useState(false)
@@ -29,8 +28,7 @@ export function Recipe (props) {
   }, [props, idToken])
 
   const getRecipe = (idToken, recipeId) => {
-    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
-    axios.get('http://localhost:3050/api/v1/recipes/' + recipeId)
+    return api.getRecipe(idToken, recipeId)
       .then((response) => { // TODO: deal with error
         const recipe = response.data
         if (recipe && recipe.ingredients) {

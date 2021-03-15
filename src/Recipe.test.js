@@ -1,78 +1,24 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import axios from 'axios'
 import { Recipe } from './Recipe'
-import { act } from 'react-dom/test-utils'
-import { Router } from 'react-router-dom'
+import { render, screen, waitFor } from '@testing-library/react'
 import { UserContext } from './UserContext'
+import { Router } from 'react-router-dom'
+import { api } from './services/api'
 
-jest.mock('axios')
+jest.mock('./services/api')
 const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
 
 let recipeData
 let basicRecipeData
 let listsData
-
-const expectedProcessedRecipeData = {
-  _id: 'testId',
-  userId: 'testUser',
-  title: 'testRecipe',
-  url: 'http://fake',
-  author: 'test author',
-  image: '',
-  source: 'test source',
-  ingredients: [
-    { quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1' },
-    { name: 'test ingredient without quantity or unit' },
-    { quantity: 1, unit: 'cup', name: 'test ingredient2', group: 'test group', displayQuantity: '1' },
-    { quantity: 1, unit: 'g', name: 'test ingredient3', group: 'test group', displayQuantity: '1' },
-    { quantity: 1, name: 'test ingredient without unit', group: 'new group', displayQuantity: '1' }
-  ],
-  ingredientList: [
-    { ingredient: '1 g test ingredient' },
-    { ingredient: 'test ingredient without quantity or unit' },
-    { groupHeader: 'test group' },
-    { ingredient: '1 cup test ingredient2' },
-    { ingredient: '1 g test ingredient3' },
-    { groupHeader: 'new group' },
-    { ingredient: '1 test ingredient without unit' }
-  ],
-  tags: ['test', 'new'],
-  instructions: '',
-  servings: 4,
-  prepTime: '20m',
-  cookingTime: '30m',
-  carbs: 90,
-  protein: 68,
-  fat: 24,
-  calories: 700,
-  rating: 3,
-  freezable: false,
-  wantToTry: false,
-  storage: 'fridge',
-  notes: 'new recipe',
-  done: false,
-  equipment: 'pan'
-}
-
-const expectedProcessedBasicRecipeData = {
-  _id: '1234',
-  userId: 'testUser',
-  title: 'testRecipe',
-  ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1' }, { name: 'test ingredient without quantity or unit' }],
-  ingredientList: [
-    { ingredient: '1 g test ingredient' },
-    { ingredient: 'test ingredient without quantity or unit' }
-  ],
-  instructions: ''
-}
+const testUserId = 'testUser'
 
 describe('Recipe component', () => {
   beforeEach(() => {
     recipeData = {
       data: {
         _id: 'testId',
-        userId: 'testUser',
+        userId: testUserId,
         title: 'testRecipe',
         url: 'http://fake',
         author: 'test author',
@@ -131,14 +77,8 @@ describe('Recipe component', () => {
       }]
     }
 
-    axios.get.mockImplementation((url) => {
-      if (url.indexOf('/lists') > -1) {
-        return Promise.resolve(listsData)
-      } else {
-        return Promise.resolve(recipeData)
-      }
-    })
-    axios.put.mockResolvedValue()
+    api.getLists.mockResolvedValue(listsData)
+    api.getRecipe.mockResolvedValue(recipeData)
   })
 
   afterEach(() => {
@@ -148,82 +88,51 @@ describe('Recipe component', () => {
   it('does not get recipe if there is no idToken', () => {
     const match = { params: { id: 'testId' } }
     const location = { search: '' }
-    act(() => {
-      mount(<Router history={historyMock}><UserContext.Provider value=''><Recipe location={location} match={match} /></UserContext.Provider></Router>)
-    })
+    render(<Router history={historyMock}><UserContext.Provider value=''><Recipe location={location} match={match} /></UserContext.Provider></Router>)
 
-    expect(axios.get).toHaveBeenCalledTimes(0)
+    expect(api.getRecipe).toHaveBeenCalledTimes(0)
   })
 
   it('gets recipe by Id when receiving an idToken', async () => {
     const match = { params: { id: 'testId' } }
     const location = { search: '' }
-    await act(async () => {
-      mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
-    })
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/recipes/testId')
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Recipe location={location} match={match} /></UserContext.Provider></Router>)
+
+    expect(api.getRecipe).toHaveBeenCalledWith(testUserId, 'testId')
+    await waitFor(() => expect(screen.getByText('Add to shopping list'))) // Read only recipe
   })
 
   describe('when recipe is readonly', () => {
     it('renders readonly recipe when edit is not set', async () => {
       const match = { params: { id: 'testId' } }
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
-      })
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Recipe location={location} match={match} /></UserContext.Provider></Router>)
 
-      await axios
-      await act(async () => {
-        wrapper.update() // Re-render component
-      })
-      expect(wrapper.find('ReadonlyRecipe').length).toEqual(1)
-      expect(wrapper.find('EditableRecipe').length).toEqual(0)
+      await waitFor(() => expect(screen.getByText('Add to shopping list'))) // Read only recipe
+      expect(screen.queryByLabelText('Title')).not.toBeInTheDocument() // Editable recipe not visible
     })
 
     it('renders readonly recipe when edit is set to false', async () => {
       const match = { params: { id: 'testId' } }
       const location = { search: '?edit=false' }
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
-      })
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Recipe location={location} match={match} /></UserContext.Provider></Router>)
 
-      await axios
-      await act(async () => {
-        wrapper.update() // Re-render component
-      })
-      expect(wrapper.find('ReadonlyRecipe').length).toEqual(1)
-      expect(wrapper.find('EditableRecipe').length).toEqual(0)
+      await waitFor(() => expect(screen.getByText('Add to shopping list'))) // Read only recipe
+      expect(screen.queryByLabelText('Title')).not.toBeInTheDocument() // Editable recipe not visible
 
-      const readonlyrecipeWrapper = wrapper.find('ReadonlyRecipe').at(0)
-      expect(readonlyrecipeWrapper.props().recipe).toEqual(expectedProcessedRecipeData)
+      // TODO: check child component got right options
     })
 
     it('renders readonly recipe with basic data', async () => {
-      axios.get.mockImplementation((url) => {
-        if (url.indexOf('/lists') > -1) {
-          return Promise.resolve(listsData)
-        } else {
-          return Promise.resolve(basicRecipeData)
-        }
-      })
+      api.getRecipe.mockResolvedValue(basicRecipeData)
+
       const match = { params: { id: '1234' } }
       const location = { search: '?edit=false' }
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
-      })
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Recipe location={location} match={match} /></UserContext.Provider></Router>)
 
-      await axios
-      await act(async () => {
-        wrapper.update() // Re-render component
-      })
-      expect(wrapper.find('ReadonlyRecipe').length).toEqual(1)
-      expect(wrapper.find('EditableRecipe').length).toEqual(0)
+      await waitFor(() => expect(screen.getByText('Add to shopping list'))) // Read only recipe
+      expect(screen.queryByLabelText('Title')).not.toBeInTheDocument() // Editable recipe not visible
 
-      const readonlyrecipeWrapper = wrapper.find('ReadonlyRecipe').at(0)
-      expect(readonlyrecipeWrapper.props().recipe).toEqual(expectedProcessedBasicRecipeData)
+      // TODO: check child component got right options
     })
   })
 
@@ -231,58 +140,35 @@ describe('Recipe component', () => {
     it('renders form when server returns a recipe', async () => {
       const match = { params: { id: 'testId' } }
       const location = { search: '?edit=true' }
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
-      })
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Recipe location={location} match={match} /></UserContext.Provider></Router>)
 
-      await axios
-      await act(async () => {
-        wrapper.update() // Re-render component
-      })
-      expect(wrapper.find('ReadonlyRecipe').length).toEqual(0)
-      expect(wrapper.find('EditableRecipe').length).toEqual(1)
+      await waitFor(() => expect(screen.queryByRole('heading')).not.toBeInTheDocument()) // Read only recipe not visible
+      expect(screen.getByLabelText('Title')).toBeInTheDocument() // Editable recipe visible
 
-      const editablerecipeWrapper = wrapper.find('EditableRecipe').at(0)
-      expect(editablerecipeWrapper.props().initialRecipe).toEqual(expectedProcessedRecipeData)
+      // TODO: check child component got right options
     })
 
     it('does not render form when server does not return a recipe', async () => {
-      axios.get.mockResolvedValue({})
+      api.getRecipe.mockResolvedValue({})
 
       const match = { params: { id: '1234' } }
       const location = { search: '?edit=true' }
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
-      })
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Recipe location={location} match={match} /></UserContext.Provider></Router>)
 
-      await axios
-      await act(async () => {
-        wrapper.update() // Re-render component
-      })
-      expect(wrapper.find('ReadonlyRecipe').length).toEqual(0)
-      expect(wrapper.find('EditableRecipe').length).toEqual(0) // No form
+      await waitFor(() => expect(screen.queryByRole('heading')).not.toBeInTheDocument()) // Read only recipe not visible
+      expect(screen.queryByLabelText('Title')).not.toBeInTheDocument() // Editable recipe not visible
     })
 
     it('renders editable recipe with basic data', async () => {
-      axios.get.mockResolvedValue(basicRecipeData)
+      api.getRecipe.mockResolvedValue(basicRecipeData)
       const match = { params: { id: '1234' } }
       const location = { search: '?edit=true' }
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><Recipe location={location} match={match} /></UserContext.Provider></Router>)
-      })
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Recipe location={location} match={match} /></UserContext.Provider></Router>)
 
-      await axios
-      await act(async () => {
-        wrapper.update() // Re-render component
-      })
-      expect(wrapper.find('ReadonlyRecipe').length).toEqual(0)
-      expect(wrapper.find('EditableRecipe').length).toEqual(1)
+      await waitFor(() => expect(screen.queryByRole('heading')).not.toBeInTheDocument()) // Read only recipe not visible
+      expect(screen.queryByLabelText('Title')).toBeInTheDocument() // Editable recipe not visible
 
-      const editablerecipeWrapper = wrapper.find('EditableRecipe').at(0)
-      expect(editablerecipeWrapper.props().initialRecipe).toEqual(expectedProcessedBasicRecipeData)
+      // TODO: check child component got right options
     })
   })
 })
