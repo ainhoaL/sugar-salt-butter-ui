@@ -14,7 +14,7 @@ function App () {
     /* istanbul ignore next */
     window.gapi.load('auth2', () => {
       window.gapi.auth2.init({
-        client_id: 'CLIENT_ID'
+        client_id: process.env.REACT_APP_WEBCLIENT_ID
       }).then(() => {
         window.gapi.signin2.render('my-signIn', {
           scope: 'profile email',

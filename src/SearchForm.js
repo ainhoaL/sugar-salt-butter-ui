@@ -5,7 +5,7 @@ import qs from 'qs'
 import './Styles.css'
 
 export function SearchForm () {
-  const [searchString, setSearchString] = useState()
+  const [searchString, setSearchString] = useState('')
 
   const history = useHistory()
 
