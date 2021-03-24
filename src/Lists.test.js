@@ -8,7 +8,7 @@ import { api } from './services/api'
 
 jest.mock('./services/api')
 
-const historyMock = { push: jest.fn(), location: {}, listen: jest.fn() }
+const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
 
 let listsData
 const testUserId = 'testUser'
@@ -43,13 +43,13 @@ describe('Lists component', () => {
   })
 
   it('does not get lists if there is no idToken', () => {
-    render(<UserContext.Provider value=''><Lists /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value=''><Lists /></UserContext.Provider></Router>)
 
     expect(api.getLists).toHaveBeenCalledTimes(0)
   })
 
   it('gets list when receiving an idToken and displays lists', async () => {
-    render(<UserContext.Provider value='testUser'><Lists /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><Lists /></UserContext.Provider></Router>)
 
     expect(api.getLists).toHaveBeenCalledTimes(1)
     expect(api.getLists).toHaveBeenCalledWith(testUserId)
@@ -60,7 +60,7 @@ describe('Lists component', () => {
 
   it('renders no items if there are no lists', async () => {
     api.getLists.mockResolvedValue({ data: [] })
-    render(<UserContext.Provider value='testUser'><Lists /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><Lists /></UserContext.Provider></Router>)
 
     expect(api.getLists).toHaveBeenCalledTimes(1)
     expect(api.getLists).toHaveBeenCalledWith(testUserId)
@@ -87,7 +87,7 @@ describe('Lists component', () => {
   })
 
   it('can delete list', async () => {
-    render(<UserContext.Provider value='testUser'><Lists /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><Lists /></UserContext.Provider></Router>)
 
     await waitFor(() => userEvent.click(screen.getAllByLabelText('delete list')[0])) // click delete button
 

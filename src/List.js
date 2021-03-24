@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import { Container, Row, Col, Button, ListGroup, ListGroupItem } from 'reactstrap'
+import { Link } from 'react-router-dom'
 import './Styles.css'
 import iconServings from './icons/icons8-restaurant-24.png'
 import iconDelete from './icons/icons8-trash-can-24.png'
@@ -66,13 +67,13 @@ export function List (props) {
       return (
         <ListGroupItem key={recipe._id}>
           <div className='listRecipeContainer' onMouseEnter={() => setSelectedRecipe(recipe._id)} onMouseLeave={() => setSelectedRecipe()}>
-            <a href={recipeLink}>
+            <Link to={recipeLink}>
               <img src={recipe.image} className='listRecipeImage' alt={recipe.title} />
-            </a>
+            </Link>
             <div className='listRecipeInfo'>
-              <a href={recipeLink} className='listRecipeTitle'>
+              <Link to={recipeLink} className='listRecipeTitle'>
                 <span>{recipe.title}</span>
-              </a>
+              </Link>
               {recipe.servings ? <span><img src={iconServings} alt='servings' />{recipe.servings}</span> : null}
             </div>
           </div>

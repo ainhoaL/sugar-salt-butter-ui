@@ -3,10 +3,12 @@ import { Search } from './Search'
 import { act } from 'react-dom/test-utils'
 import { render, screen, waitFor } from '@testing-library/react'
 import { UserContext } from './UserContext'
+import { Router } from 'react-router-dom'
 import { api } from './services/api'
 
 jest.mock('./services/api')
 jest.useFakeTimers('modern')
+const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
 
 const testUserId = 'testUser'
 const searchParams = { searchString: 'sugar flour' }
@@ -33,7 +35,7 @@ describe('Search component', () => {
   describe('handles a search and sends search to server', () => {
     it('and displays results when there are some', async () => {
       api.searchRecipes.mockResolvedValue(recipeResults)
-      render(<UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider>)
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider></Router>)
 
       expect(api.searchRecipes).toHaveBeenCalledTimes(1)
       expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'skip=0&limit=70&searchString=sugar flour')
@@ -44,7 +46,7 @@ describe('Search component', () => {
 
     it('and displays no results when there are none', async () => {
       api.searchRecipes.mockResolvedValue({ data: { count: 0, recipes: [] } })
-      render(<UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider>)
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider></Router>)
 
       expect(api.searchRecipes).toHaveBeenCalledTimes(1)
       expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'skip=0&limit=70&searchString=sugar flour')
@@ -53,7 +55,7 @@ describe('Search component', () => {
     })
 
     it('does not make a request to the server if there is no idToken', async () => {
-      render(<UserContext.Provider value=''><Search searchParams={searchParams} /></UserContext.Provider>)
+      render(<Router history={historyMock}><UserContext.Provider value=''><Search searchParams={searchParams} /></UserContext.Provider></Router>)
 
       expect(api.searchRecipes).toHaveBeenCalledTimes(0)
 
@@ -61,7 +63,7 @@ describe('Search component', () => {
     })
 
     it('does not make a request to the server if there is no searchString', async () => {
-      render(<UserContext.Provider value={testUserId}><Search /></UserContext.Provider>)
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Search /></UserContext.Provider></Router>)
 
       expect(api.searchRecipes).toHaveBeenCalledTimes(0)
 
@@ -101,7 +103,7 @@ describe('Search component', () => {
 
       it('handles a scroll', async () => {
         api.searchRecipes.mockResolvedValue(recipeResults)
-        render(<UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider>)
+        render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider></Router>)
 
         expect(api.searchRecipes).toHaveBeenCalledTimes(1)
         expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'skip=0&limit=70&searchString=sugar flour')
@@ -137,7 +139,7 @@ describe('Search component', () => {
 
       it('when scrolling it does not request more recipes if there are no more', async () => {
         api.searchRecipes.mockResolvedValue(smallRecipeResults)
-        render(<UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider>)
+        render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Search searchParams={searchParams} /></UserContext.Provider></Router>)
 
         expect(api.searchRecipes).toHaveBeenCalledTimes(1)
         expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'skip=0&limit=70&searchString=sugar flour')

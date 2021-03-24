@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react'
-import { useHistory } from 'react-router-dom'
+import { useHistory, Link } from 'react-router-dom'
 import { Container, Row, Col, ListGroup, ListGroupItem, Badge, Button } from 'reactstrap'
 import './Styles.css'
 import { UserContext } from './UserContext'
@@ -45,7 +45,7 @@ export function Lists (props) {
             {lists.map((list) => {
               const listUrl = 'lists/' + list._id
               const dateCreated = new Date(list.dateCreated)
-              return <ListGroupItem key={list._id}><a href={listUrl}><strong>{list.title}</strong></a> <em>({dateCreated.toLocaleDateString()})</em> <Badge pill>{list.items.length}</Badge> <Button className='deleteListItem' aria-label='delete list' onClick={() => deleteList(list._id)}>x</Button></ListGroupItem>
+              return <ListGroupItem key={list._id}><Link to={listUrl}><strong>{list.title}</strong></Link> <em>({dateCreated.toLocaleDateString()})</em> <Badge pill>{list.items.length}</Badge> <Button className='deleteListItem' aria-label='delete list' onClick={() => deleteList(list._id)}>x</Button></ListGroupItem>
             })}
           </ListGroup>
         </Col>

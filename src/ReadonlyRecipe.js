@@ -121,7 +121,7 @@ export function ReadonlyRecipe (props) {
   const listName = selectedList !== 'newlist' ? selectedListName : newListName
   const addedToListAlert = (
     <Alert color='info' isOpen={addedToListAlertVisible} toggle={addedToListAlertOnDismiss}>
-      Recipe added to list <a href={listUrl}>{listName}</a>
+      Recipe added to list <Link to={listUrl}>{listName}</Link>
     </Alert>
   )
 

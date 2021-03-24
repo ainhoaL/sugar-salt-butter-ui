@@ -2,7 +2,10 @@ import React from 'react'
 import { Dashboard } from './Dashboard'
 import { UserContext } from './UserContext'
 import { render, screen, waitFor } from '@testing-library/react'
+import { Router } from 'react-router-dom'
 import { api } from './services/api'
+
+const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
 
 jest.mock('./services/api')
 
@@ -71,12 +74,12 @@ describe('Dashboard component', () => {
   })
 
   it('does not get recipes if there is no idToken', () => {
-    render(<UserContext.Provider value=''><Dashboard location={location} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value=''><Dashboard location={location} /></UserContext.Provider></Router>)
     expect(api.searchRecipes).toHaveBeenCalledTimes(0)
   })
 
   it('gets all recipes by userId when receiving an idToken', async () => {
-    render(<UserContext.Provider value={testUserId}><Dashboard location={location} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Dashboard location={location} /></UserContext.Provider></Router>)
 
     await waitFor(() => screen.getByText('first recipe'))
     expect(screen.getByText('second recipe')).toBeInTheDocument()
@@ -92,7 +95,7 @@ describe('Dashboard component', () => {
 
   it('displays search component if querystring has search values', async () => {
     const location = { search: '?searchString=cake' }
-    render(<UserContext.Provider value={testUserId}><Dashboard location={location} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Dashboard location={location} /></UserContext.Provider></Router>)
 
     expect(await screen.getByText('SearchComponentMock')).toBeInTheDocument() // Search component is displayed
   })

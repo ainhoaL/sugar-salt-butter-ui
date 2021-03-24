@@ -3,7 +3,10 @@ import { List } from './List'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { UserContext } from './UserContext'
+import { Router } from 'react-router-dom'
 import { api } from './services/api'
+
+const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
 
 jest.mock('./services/api')
 
@@ -57,14 +60,14 @@ describe('List component', () => {
 
   it('does not get list if there is no idToken', () => {
     const match = { params: { id: 'testId' } }
-    render(<UserContext.Provider value=''><List match={match} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value=''><List match={match} /></UserContext.Provider></Router>)
 
     expect(api.getList).toHaveBeenCalledTimes(0)
   })
 
   it('gets list by Id when receiving an idToken and displays list', async () => {
     const match = { params: { id: 'testId' } }
-    render(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
     expect(api.getList).toHaveBeenCalledTimes(1)
     expect(api.getList).toHaveBeenCalledWith(testUserId, 'testId')
@@ -82,7 +85,7 @@ describe('List component', () => {
   it('renders nothing if list does not exist', async () => {
     api.getList.mockResolvedValue({ data: null })
     const match = { params: { id: 'testId' } }
-    render(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
     expect(api.getList).toHaveBeenCalledTimes(1)
     expect(api.getList).toHaveBeenCalledWith(testUserId, 'testId')
@@ -103,7 +106,7 @@ describe('List component', () => {
       }
     })
     const match = { params: { id: 'testId' } }
-    render(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
     expect(api.getList).toHaveBeenCalledTimes(1)
     expect(api.getList).toHaveBeenCalledWith(testUserId, 'testId')
@@ -113,7 +116,7 @@ describe('List component', () => {
 
   it('can delete recipe from list', async () => {
     const match = { params: { id: 'testId' } }
-    render(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
     await waitFor(() => userEvent.click(screen.getAllByLabelText('delete recipe')[0])) // click delete button
 
@@ -126,7 +129,7 @@ describe('List component', () => {
 
   it('hovering over recipe highlights list items', async () => {
     const match = { params: { id: 'testId' } }
-    render(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
     await waitFor(() => screen.getByText('test shopping list')) // list title
 
@@ -147,7 +150,7 @@ describe('List component', () => {
 
   it('can delete item from list', async () => {
     const match = { params: { id: 'testId' } }
-    render(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
     await waitFor(() => userEvent.click(screen.getAllByLabelText('delete item')[0])) // click delete button
 
@@ -160,7 +163,7 @@ describe('List component', () => {
 
   it('tries to delete list when clicking delete button', async () => {
     const match = { params: { id: 'testId' } }
-    render(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
     await waitFor(() => userEvent.click(screen.getByAltText('delete list'))) // click delete button
 
