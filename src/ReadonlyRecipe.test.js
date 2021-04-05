@@ -111,6 +111,32 @@ describe('ReadonlyRecipe component', () => {
     expect(screen.getByText('testRecipe')).toBeInTheDocument()
     expect(screen.getByTestId('ingredientsContainer')).toHaveTextContent('Ingredients: 1 g test ingredienttest ingredient without quantity or unit')
     expect(screen.getByTestId('instructionsContainer')).toHaveTextContent('Instructions: basic instructions')
+    expect(screen.queryByRole('img')).not.toBeInTheDocument() // There is no recipe image because the data does not have an image
+  })
+
+  it('renders readonly recipe with a broken image', async () => {
+    const dataWithBrokenImg = {
+      _id: '1234',
+      userId: testUserId,
+      title: 'testRecipe',
+      ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1' }, { name: 'test ingredient without quantity or unit' }],
+      ingredientList: [
+        { ingredient: '1 g test ingredient' },
+        { ingredient: 'test ingredient without quantity or unit' }
+      ],
+      instructions: 'basic instructions',
+      image: 'fakeImage'
+    }
+
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={dataWithBrokenImg} /></UserContext.Provider></Router>)
+
+    expect(api.getLists).toHaveBeenCalledWith(testUserId)
+
+    await waitFor(() => screen.getByText('test shopping list')) // wait until dropdown is populated
+
+    expect(screen.getByText('testRecipe')).toBeInTheDocument()
+    fireEvent.error(screen.getByRole('img')) // Image cannot be fetched
+    expect(screen.queryByRole('img')).not.toBeInTheDocument() // There is no recipe image because the data does not have an image
   })
 
   it('renders readonly recipe with all data', async () => {

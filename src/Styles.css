@@ -60,16 +60,10 @@
 }
 
 .recipeHeaderImage {
-  float: left;
-}
-
-.recipeHeaderImage img {
   max-width: 400px;
   max-height: 400px;
-}
-
-.recipeHeaderText {
-  margin-left: 14px;
+  margin-right: 14px;
+  float: left;
 }
 
 .recipeParagraph {
