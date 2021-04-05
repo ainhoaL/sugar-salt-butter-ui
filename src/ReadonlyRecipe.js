@@ -58,6 +58,10 @@ export function ReadonlyRecipe (props) {
     recipeSource += ' by ' + recipe.author
   }
 
+  const handleImageError = (event) => {
+    event.target.style.display = 'none'
+  }
+
   const handleAddToList = (event) => {
     event.preventDefault()
     addedToListAlertOnDismiss()
@@ -128,10 +132,10 @@ export function ReadonlyRecipe (props) {
   return (
     <div>
       <div className='recipeHeaderContainer'>
-        <div className='recipeHeaderImage'>
-          <img src={recipe.image} alt={recipe.title} />
-        </div>
-        <div className='recipeHeaderText'>
+        {recipe.image
+          ? <img src={recipe.image} alt={recipe.title} onError={handleImageError} className='recipeHeaderImage' />
+          : null }
+        <div>
           <h2>{recipe.title}
             <span className='actionsMenu'>
               <input type='image' src={iconEdit} alt='edit recipe' className='action' onClick={() => props.editRecipe(true)} />
@@ -176,7 +180,7 @@ export function ReadonlyRecipe (props) {
       <br />
       <p data-testid='ingredientsContainer'><strong>Ingredients: </strong><br />
         {ingredientList}
-      </p>s
+      </p>
       <p className='recipeParagraph' data-testid='instructionsContainer'><strong>Instructions: </strong><br />
         {recipe.instructions}
       </p>
