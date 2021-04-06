@@ -172,66 +172,6 @@ describe('ReadonlyRecipe component', () => {
     expect(screen.getByTestId('nutritionContainer')).toHaveTextContent('Nutritional information: Calories: 700 Protein: 68 Carbs: 90 Fat: 24')
   })
 
-  it('renders readonly recipe with basic data without servings and no shopping lists shows input to create new list but not for servings', async () => {
-    api.getLists.mockResolvedValue({ data: [] })
-    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={basicRecipeData} /></UserContext.Provider></Router>)
-
-    await waitFor(() => screen.getByText('New list')) // wait until dropdown is populated
-
-    expect(screen.getByPlaceholderText('New list name')).toBeInTheDocument()
-    expect(screen.queryByPlaceholderText('Servings to add to list')).not.toBeInTheDocument()
-  })
-
-  describe('when adding recipe to list', () => {
-    it('can add recipe to existing list', async () => {
-      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={recipeData} /></UserContext.Provider></Router>)
-
-      await waitFor(() => screen.getByText('test shopping list')) // wait until dropdown is populated
-      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'list1' } })
-
-      const servingsText = screen.getByRole('textbox')
-      expect(servingsText.value).toEqual('4') // Recipe has servings so it populates the servings input
-      servingsText.setSelectionRange(0, servingsText.value.length)
-      userEvent.type(servingsText, '6')
-      await waitFor(() => userEvent.click(screen.getByLabelText('add recipe to list'))) // add to shopping list
-
-      const expectedRecipeObject = {
-        recipeId: 'testId',
-        recipeServings: '6'
-      }
-      expect(api.addRecipeToList).toHaveBeenCalledWith(testUserId, 'list1', expectedRecipeObject)
-
-      await waitFor(() => expect(screen.getByText('Recipe added to list')).toBeInTheDocument())
-    })
-
-    it('can add recipe to new list', async () => {
-      api.createList.mockResolvedValue({ data: { _id: 'list3', title: 'what', recipes: { href: '/api/v1/lists/list3/recipes' } } })
-
-      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={recipeData} /></UserContext.Provider></Router>)
-
-      await waitFor(() => screen.getByText('test shopping list')) // wait until dropdown is populated
-      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'newlist' } })
-
-      userEvent.type(screen.getAllByRole('textbox')[0], 'what')
-      const servingsText = screen.getAllByRole('textbox')[1]
-      expect(servingsText.value).toEqual('4') // Recipe has servings
-      servingsText.setSelectionRange(0, servingsText.value.length)
-      userEvent.type(servingsText, '2')
-
-      await waitFor(() => userEvent.click(screen.getByLabelText('add recipe to list'))) // add to shopping list
-
-      const expectedRecipeObject = {
-        recipeId: 'testId',
-        recipeServings: '2'
-      }
-
-      expect(api.createList).toHaveBeenCalledWith(testUserId, { title: 'what' })
-      expect(api.addRecipeToList).toHaveBeenCalledWith(testUserId, 'list3', expectedRecipeObject)
-
-      await waitFor(() => expect(screen.getByText('Recipe added to list')).toBeInTheDocument())
-    })
-  })
-
   it('sets recipe to edit when clicking edit button', async () => {
     const editRecipeMock = jest.fn()
     render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={basicRecipeData} editRecipe={editRecipeMock} /></UserContext.Provider></Router>)
