@@ -1,12 +1,15 @@
 import React from 'react'
 import { Recipe } from './Recipe'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { UserContext } from './UserContext'
 import { Router } from 'react-router-dom'
 import { api } from './services/api'
 
 jest.mock('./services/api')
 const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
+
+window.scrollTo = jest.fn()
 
 let recipeData
 let basicRecipeData
@@ -79,6 +82,7 @@ describe('Recipe component', () => {
 
     api.getLists.mockResolvedValue(listsData)
     api.getRecipe.mockResolvedValue(recipeData)
+    api.updateRecipe.mockResolvedValue()
   })
 
   afterEach(() => {
@@ -169,6 +173,37 @@ describe('Recipe component', () => {
       expect(screen.queryByLabelText('Title')).toBeInTheDocument() // Editable recipe not visible
 
       // TODO: check child component got right options
+    })
+
+    it('handles recipe being updated', async () => {
+      global.scrollTo = jest.fn()
+      const match = { params: { id: 'testId' } }
+      const location = { search: '?edit=true' }
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Recipe location={location} match={match} /></UserContext.Provider></Router>)
+
+      await waitFor(() => expect(screen.queryByLabelText('Title')).toBeInTheDocument())
+      userEvent.click(screen.getByText('Update'))
+
+      await waitFor(() => expect(screen.getByText('Add to shopping list'))) // Back to read only recipe
+      expect(screen.getByText('Recipe updated')).toBeInTheDocument()
+      userEvent.click(screen.getByLabelText('Close')) // close alert
+      expect(api.getRecipe).toHaveBeenCalledTimes(2)
+    })
+
+    it('after updating a recipe it hides alert if recipe is edited again', async () => {
+      global.scrollTo = jest.fn()
+      const match = { params: { id: 'testId' } }
+      const location = { search: '?edit=true' }
+      render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Recipe location={location} match={match} /></UserContext.Provider></Router>)
+
+      await waitFor(() => expect(screen.queryByLabelText('Title')).toBeInTheDocument())
+      userEvent.click(screen.getByText('Update'))
+
+      await waitFor(() => expect(screen.getByText('Add to shopping list'))) // Back to read only recipe
+      expect(screen.getByText('Recipe updated')).toBeInTheDocument()
+      // do not close alert
+      userEvent.click(screen.getByAltText('edit recipe')) // edit recipe again
+      await waitFor(() => expect(screen.queryByText('Recipe updated')).toBeInTheDocument())
     })
   })
 })

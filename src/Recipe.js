@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { Container, Row, Col } from 'reactstrap'
+import { Container, Row, Col, Alert } from 'reactstrap'
 import qs from 'qs'
 import './Styles.css'
 import { ReadonlyRecipe } from './ReadonlyRecipe'
@@ -10,7 +10,9 @@ import { api } from './services/api'
 export function Recipe (props) {
   const [edit, setEdit] = useState(false)
   const [recipe, setRecipe] = useState({})
+  const [updatedRecipe, setUpdatedRecipe] = useState(false)
 
+  const updatedRecipeAlertOnDismiss = () => setUpdatedRecipe(false)
   const idToken = useContext(UserContext)
 
   useEffect(() => {
@@ -26,6 +28,20 @@ export function Recipe (props) {
 
     getRecipe(idToken, params.id)
   }, [props, idToken])
+
+  useEffect(() => {
+    if (!recipe) return
+    if (updatedRecipe) {
+      getRecipe(idToken, recipe._id)
+    }
+  }, [updatedRecipe, idToken, recipe])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    if (edit) {
+      updatedRecipeAlertOnDismiss()
+    }
+  }, [edit])
 
   const getRecipe = (idToken, recipeId) => {
     return api.getRecipe(idToken, recipeId)
@@ -66,6 +82,12 @@ export function Recipe (props) {
       })
   }
 
+  const recipeUpdatedAlert = (
+    <Alert color='info' isOpen={updatedRecipe} toggle={updatedRecipeAlertOnDismiss}>
+      Recipe updated
+    </Alert>
+  )
+
   if (!recipe || !recipe.title) {
     // TODO: loading message?
     return null
@@ -73,9 +95,10 @@ export function Recipe (props) {
   return (
     <Container>
       <Row>
-        <Col sm='12' md={{ size: 10, offset: 1 }}>
+        <Col sm='12' md={{ size: 10, offset: 1 }} className='recipePage'>
+          {recipeUpdatedAlert}
           {edit
-            ? <EditableRecipe initialRecipe={recipe} editRecipe={setEdit} />
+            ? <EditableRecipe initialRecipe={recipe} editRecipe={setEdit} updatedRecipe={setUpdatedRecipe} />
             : <ReadonlyRecipe recipe={recipe} editRecipe={setEdit} />}
         </Col>
       </Row>
