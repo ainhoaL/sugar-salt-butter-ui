@@ -35,7 +35,6 @@ const defaultEditableRecipe = {
 
 export function EditableRecipe (props) {
   const [recipe, setRecipe] = useState(defaultEditableRecipe)
-  const [updatedRecipe, setUpdatedRecipe] = useState(false)
 
   const idToken = useContext(UserContext)
 
@@ -84,7 +83,8 @@ export function EditableRecipe (props) {
 
     return api.updateRecipe(idToken, recipe._id, recipeObject)
       .then((response) => {
-        setUpdatedRecipe(true)
+        props.updatedRecipe(true)
+        props.editRecipe(false)
       })
   }
 
@@ -213,10 +213,6 @@ export function EditableRecipe (props) {
       </FormGroup>
       <br /><br />
       <Button type='submit'>Update</Button> <Button className='cancelEdit' onClick={() => props.editRecipe(false)}>Cancel</Button>
-      <br />
-      {updatedRecipe
-        ? <i> Recipe updated</i>
-        : null}
       <br /><br />
     </Form>
   )

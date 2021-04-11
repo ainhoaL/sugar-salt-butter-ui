@@ -54,9 +54,12 @@
     text-overflow:ellipsis
 }
 
+.recipePage {
+    padding-top: 2%;
+}
+
 .recipeHeaderContainer {
   display: flex;
-  padding-top: 2%;
 }
 
 .recipeHeaderImage {

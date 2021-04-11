@@ -1,7 +1,7 @@
 import React from 'react'
 import { EditableRecipe } from './EditableRecipe'
 import { UserContext } from './UserContext'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { api } from './services/api'
 
@@ -114,7 +114,9 @@ describe('EditableRecipe component', () => {
   })
 
   it('handles a form submit and updates recipe in server', async () => {
-    render(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={recipeData} /></UserContext.Provider>)
+    const editRecipeMock = jest.fn()
+    const updatedRecipeMock = jest.fn()
+    render(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={recipeData} editRecipe={editRecipeMock} updatedRecipe={updatedRecipeMock} /></UserContext.Provider>)
 
     const titleInput = screen.getByLabelText('Title')
     titleInput.setSelectionRange(0, titleInput.value.length)
@@ -209,11 +211,17 @@ describe('EditableRecipe component', () => {
     expect(api.updateRecipe).toHaveBeenCalledTimes(1)
     expect(api.updateRecipe).toHaveBeenCalledWith(testUserId, 'testId', expectedRecipeObject)
 
-    await waitFor(() => screen.getByText('Recipe updated'))
+    await api.updateRecipe
+    expect(editRecipeMock).toHaveBeenCalledTimes(1)
+    expect(editRecipeMock).toHaveBeenCalledWith(false)
+    expect(updatedRecipeMock).toHaveBeenCalledTimes(1)
+    expect(updatedRecipeMock).toHaveBeenCalledWith(true)
   })
 
   it('handles changing the rating', async () => {
-    render(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={recipeData} /></UserContext.Provider>)
+    const editRecipeMock = jest.fn()
+    const updatedRecipeMock = jest.fn()
+    render(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={recipeData} editRecipe={editRecipeMock} updatedRecipe={updatedRecipeMock} /></UserContext.Provider>)
 
     userEvent.click(screen.getByAltText('1 star set')) // click on first star button
 
@@ -246,16 +254,22 @@ describe('EditableRecipe component', () => {
     expect(api.updateRecipe).toHaveBeenCalledTimes(1)
     expect(api.updateRecipe).toHaveBeenCalledWith(testUserId, 'testId', expectedRecipeObject)
 
-    await waitFor(() => screen.getByText('Recipe updated'))
+    await api.updateRecipe
+    expect(editRecipeMock).toHaveBeenCalledTimes(1)
+    expect(editRecipeMock).toHaveBeenCalledWith(false)
+    expect(updatedRecipeMock).toHaveBeenCalledTimes(1)
+    expect(updatedRecipeMock).toHaveBeenCalledWith(true)
   })
 
   it('cancels edit when clicking cancel button', () => {
     const editRecipeMock = jest.fn()
-    render(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={recipeData} editRecipe={editRecipeMock} /></UserContext.Provider>)
+    const updatedRecipeMock = jest.fn()
+    render(<UserContext.Provider value='testUser'><EditableRecipe initialRecipe={recipeData} editRecipe={editRecipeMock} updatedRecipe={updatedRecipeMock} /></UserContext.Provider>)
 
     userEvent.click(screen.getByText('Cancel')) // cancel edit recipe
 
     expect(editRecipeMock).toHaveBeenCalledTimes(1)
     expect(editRecipeMock).toHaveBeenCalledWith(false)
+    expect(updatedRecipeMock).toHaveBeenCalledTimes(0)
   })
 })
