@@ -1,27 +1,29 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import axios from 'axios'
 import { ReadonlyRecipe } from './ReadonlyRecipe'
-import { act } from 'react-dom/test-utils'
-import { Router } from 'react-router-dom'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { UserContext } from './UserContext'
+import { Router } from 'react-router-dom'
+import { api } from './services/api'
 
-jest.mock('axios')
+jest.mock('./services/api')
+
 const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
 
 let recipeData
 let basicRecipeData
 let listsData
+const testUserId = 'testUser'
 
 describe('ReadonlyRecipe component', () => {
   beforeEach(() => {
     recipeData = {
       _id: 'testId',
-      userId: 'testUser',
+      userId: testUserId,
       title: 'testRecipe',
       url: 'http://fake',
       author: 'test author',
-      image: '',
+      image: 'test image',
       source: 'test source',
       ingredients: [
         { quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1' },
@@ -39,8 +41,8 @@ describe('ReadonlyRecipe component', () => {
         { groupHeader: 'new group' },
         { ingredient: '1 test ingredient without unit' }
       ],
-      tags: ['test', 'new'],
-      instructions: '',
+      tags: ['testtag', 'newtag'],
+      instructions: 'cook everything together',
       servings: 4,
       prepTime: '20m',
       cookingTime: '30m',
@@ -59,14 +61,14 @@ describe('ReadonlyRecipe component', () => {
 
     basicRecipeData = {
       _id: '1234',
-      userId: 'testUser',
+      userId: testUserId,
       title: 'testRecipe',
       ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1' }, { name: 'test ingredient without quantity or unit' }],
       ingredientList: [
         { ingredient: '1 g test ingredient' },
         { ingredient: 'test ingredient without quantity or unit' }
       ],
-      instructions: ''
+      instructions: 'basic instructions'
     }
 
     listsData = {
@@ -89,141 +91,104 @@ describe('ReadonlyRecipe component', () => {
       }]
     }
 
-    axios.get.mockResolvedValue(listsData)
-    axios.put.mockResolvedValue()
+    api.getLists.mockResolvedValue(listsData)
+    api.addRecipeToList.mockResolvedValue()
+    api.createList.mockResolvedValue()
+    api.deleteRecipe.mockResolvedValue()
   })
 
   afterEach(() => {
     jest.clearAllMocks()
   })
 
-  describe('when recipe is readonly', () => {
-    it('renders readonly recipe with basic data', async () => {
-      axios.get.mockResolvedValue(listsData)
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><ReadonlyRecipe recipe={basicRecipeData} /></UserContext.Provider></Router>)
-      })
+  it('renders readonly recipe with basic data', async () => {
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={basicRecipeData} /></UserContext.Provider></Router>)
 
-      await axios
-      await act(async () => {
-        wrapper.update() // Re-render component
-      })
+    expect(api.getLists).toHaveBeenCalledWith(testUserId)
 
-      expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-      expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists')
+    await waitFor(() => screen.getByText('test shopping list')) // wait until dropdown is populated
 
-      // Check lists are loaded:
-      expect(wrapper.find('option').length).toEqual(3)
-      expect(wrapper.find('option').at(0).props().children).toEqual('test shopping list')
-      expect(wrapper.find('option').at(0).props().value).toEqual('list1')
-      expect(wrapper.find('option').at(1).props().children).toEqual('test list')
-      expect(wrapper.find('option').at(1).props().value).toEqual('list2')
-      expect(wrapper.find('option').at(2).props().children).toEqual('New list')
-      expect(wrapper.find('option').at(2).props().value).toEqual('newlist')
-    })
+    expect(screen.getByText('testRecipe')).toBeInTheDocument()
+    expect(screen.getByTestId('ingredientsContainer')).toHaveTextContent('Ingredients: 1 g test ingredienttest ingredient without quantity or unit')
+    expect(screen.getByTestId('instructionsContainer')).toHaveTextContent('Instructions: basic instructions')
+    expect(screen.queryByRole('img')).not.toBeInTheDocument() // There is no recipe image because the data does not have an image
+  })
 
-    it('renders readonly recipe with basic data and no shopping lists', async () => {
-      axios.get.mockResolvedValue({ data: [] })
-      let wrapper
-      await act(async () => {
-        wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><ReadonlyRecipe recipe={basicRecipeData} /></UserContext.Provider></Router>)
-      })
+  it('renders readonly recipe with a broken image', async () => {
+    const dataWithBrokenImg = {
+      _id: '1234',
+      userId: testUserId,
+      title: 'testRecipe',
+      ingredients: [{ quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1' }, { name: 'test ingredient without quantity or unit' }],
+      ingredientList: [
+        { ingredient: '1 g test ingredient' },
+        { ingredient: 'test ingredient without quantity or unit' }
+      ],
+      instructions: 'basic instructions',
+      image: 'fakeImage'
+    }
 
-      await axios
-      await act(async () => {
-        wrapper.update() // Re-render component
-      })
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={dataWithBrokenImg} /></UserContext.Provider></Router>)
 
-      expect(wrapper.find('#listNameText').at(0).length).toEqual(1) // New list is the only option so the input for list name should be visible
-      expect(wrapper.find('#servingsText').at(0).length).toEqual(0) // Recipe has no servings so there is no servings input
+    expect(api.getLists).toHaveBeenCalledWith(testUserId)
 
-      // Check lists are loaded:
-      expect(wrapper.find('option').length).toEqual(1)
-      expect(wrapper.find('option').at(0).props().children).toEqual('New list')
-      expect(wrapper.find('option').at(0).props().value).toEqual('newlist')
-    })
+    await waitFor(() => screen.getByText('test shopping list')) // wait until dropdown is populated
 
-    describe('when adding recipe to list', () => {
-      it('can add recipe to existing list', async () => {
-        axios.post.mockResolvedValue()
+    expect(screen.getByText('testRecipe')).toBeInTheDocument()
+    fireEvent.error(screen.getByRole('img')) // Image cannot be fetched
+    expect(screen.queryByRole('img')).not.toBeInTheDocument() // There is no recipe image because the data does not have an image
+  })
 
-        let wrapper
-        await act(async () => {
-          wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><ReadonlyRecipe recipe={recipeData} /></UserContext.Provider></Router>)
-        })
+  it('renders readonly recipe with all data', async () => {
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={recipeData} /></UserContext.Provider></Router>)
 
-        await axios
-        await act(async () => {
-          wrapper.update() // Re-render component
-        })
+    expect(api.getLists).toHaveBeenCalledWith(testUserId)
 
-        const listsSelect = wrapper.find('#listsSelect').at(0)
-        listsSelect.simulate('change', { target: { value: 'list1' } })
-        const servingsText = wrapper.find('#servingsText').at(0)
-        expect(servingsText.props().value).toEqual(4) // Recipe has servings
-        servingsText.simulate('change', { target: { value: '6' } })
-        const addRecipeToListButton = wrapper.find('#addRecipeToListButton').at(0)
-        await act(async () => {
-          addRecipeToListButton.simulate('click') // add to shopping list
-        })
+    await waitFor(() => screen.getByText('test shopping list')) // wait until dropdown is populated
 
-        const expectedRecipeObject = {
-          recipeId: 'testId',
-          recipeServings: '6'
-        }
+    expect(screen.getByText('testRecipe')).toBeInTheDocument()
+    expect(screen.getByText('test source by test author')).toBeInTheDocument()
+    expect(screen.getByText('test source by test author')).toHaveAttribute('href', 'http://fake')
+    expect(screen.getAllByRole('img')[0]).toHaveAttribute('src', 'test image')
 
-        await axios
-        expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-        expect(axios.post).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/list1/recipes', expectedRecipeObject)
-      })
+    expect(screen.getByAltText('3 star set')).toBeInTheDocument() // Rating stars stop at 3
+    expect(screen.queryByAltText('4 star set')).not.toBeInTheDocument()
 
-      it('can add recipe to new list', async () => {
-        axios.post.mockImplementation((url) => {
-          if (url.indexOf('/recipes') > -1) {
-            return Promise.resolve()
-          } else {
-            return Promise.resolve({ data: { _id: 'list3', title: 'what', recipes: { href: '/api/v1/lists/list3/recipes' } } })
-          }
-        })
+    // tags
+    expect(screen.getByText('testtag'))
+    userEvent.click(screen.getByText('testtag'))
+    expect(historyMock.push).toHaveBeenCalledWith('/?tags=testtag')
+    expect(screen.getByText('newtag'))
+    userEvent.click(screen.getByText('newtag'))
+    expect(historyMock.push).toHaveBeenCalledWith('/?tags=newtag')
 
-        let wrapper
-        await act(async () => {
-          wrapper = mount(<Router history={historyMock}><UserContext.Provider value='testUser'><ReadonlyRecipe recipe={recipeData} /></UserContext.Provider></Router>)
-        })
+    const ingredientsList = 'Ingredients: 1 g test ingredienttest ingredient without quantity or unittest group: 1 cup test ingredient21 g test ingredient3new group: 1 test ingredient without unit'
+    expect(screen.getByTestId('ingredientsContainer')).toHaveTextContent(ingredientsList)
 
-        await axios
-        await act(async () => {
-          wrapper.update() // Re-render component
-        })
+    expect(screen.getByTestId('instructionsContainer')).toHaveTextContent('Instructions: cook everything together')
+    expect(screen.getByTestId('storageContainer')).toHaveTextContent('Storage: fridge')
+    expect(screen.getByTestId('notesContainer')).toHaveTextContent('Notes: new recipe')
+    expect(screen.getByTestId('equipmentContainer')).toHaveTextContent('Equipment: pan')
+    expect(screen.getByTestId('nutritionContainer')).toHaveTextContent('Nutritional information: Calories: 700 Protein: 68 Carbs: 90 Fat: 24')
+  })
 
-        const listsSelect = wrapper.find('#listsSelect').at(0)
-        listsSelect.simulate('change', { target: { value: 'newlist' } })
+  it('sets recipe to edit when clicking edit button', async () => {
+    const editRecipeMock = jest.fn()
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={basicRecipeData} editRecipe={editRecipeMock} /></UserContext.Provider></Router>)
 
-        await act(async () => {
-          wrapper.update() // Re-render component
-        })
+    await waitFor(() => userEvent.click(screen.getByAltText('edit recipe'))) // edit recipe
 
-        const listNameText = wrapper.find('#listNameText').at(0)
-        listNameText.simulate('change', { target: { value: 'what' } })
-        const servingsText = wrapper.find('#servingsText').at(0)
-        expect(servingsText.props().value).toEqual(4) // Recipe has servings
-        servingsText.simulate('change', { target: { value: '2' } })
-        const addRecipeToListButton = wrapper.find('#addRecipeToListButton').at(0)
-        await act(async () => {
-          addRecipeToListButton.simulate('click') // add to shopping list
-        })
+    expect(editRecipeMock).toHaveBeenCalledTimes(1)
+    expect(editRecipeMock).toHaveBeenCalledWith(true)
+  })
 
-        const expectedRecipeObject = {
-          recipeId: 'testId',
-          recipeServings: '2'
-        }
+  it('tries to delete recipe when clicking delete button', async () => {
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><ReadonlyRecipe recipe={basicRecipeData} /></UserContext.Provider></Router>)
 
-        await axios
-        expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-        expect(axios.post).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists', { title: 'what' })
-        expect(axios.post).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/list3/recipes', expectedRecipeObject)
-      })
-    })
+    await waitFor(() => userEvent.click(screen.getByAltText('delete recipe'))) // delete recipe
+
+    expect(api.deleteRecipe).toHaveBeenCalledWith(testUserId, basicRecipeData._id)
+
+    await waitFor(() => expect(screen.getByText('Recipe deleted')).toBeInTheDocument())
   })
 })

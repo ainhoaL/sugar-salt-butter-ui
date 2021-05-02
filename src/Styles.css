@@ -54,26 +54,31 @@
     text-overflow:ellipsis
 }
 
+.recipePage {
+    padding-top: 2%;
+}
+
 .recipeHeaderContainer {
   display: flex;
-  padding-top: 2%;
 }
 
 .recipeHeaderImage {
-  float: left;
-}
-
-.recipeHeaderImage img {
   max-width: 400px;
   max-height: 400px;
-}
-
-.recipeHeaderText {
-  margin-left: 14px;
+  margin-right: 14px;
+  float: left;
 }
 
 .recipeParagraph {
   white-space: pre-line;
+}
+
+.actionsMenu {
+  margin-left: 12px;
+}
+
+.action {
+  margin-right: 2px;
 }
 
 .starButton:focus {
@@ -99,11 +104,7 @@
 }
 
 .listRecipe li {
-    height:60px;
     display: flex;
-    align-items: baseline;
-    flex-direction: row;
-    margin: 8px 0 8px 0;
 }
 
 .listRecipe a {
@@ -139,7 +140,7 @@
     text-decoration: none;
 }
 
-.listRecipe .delete {
+li .deleteListItem {
     padding: 0;
     background-color: transparent;
     border: 0;
@@ -147,9 +148,10 @@
     font-weight: 700;
     color: #6c757d;
     margin-left: auto;
+    vertical-align: baseline;
 }
 
-.listRecipe .delete:hover, .listRecipe .delete:active, .listRecipe .delete:visited, .listRecipe .delete:focus {
+li .deleteListItemm, .deleteListItem:hover, .deleteListItem:active, .deleteListItem:visited, .deleteListItem:focus {
     background-color: transparent  !important; 
     border: 0  !important;
     float: right  !important;
@@ -157,12 +159,18 @@
     color: #6c757d  !important;
 }
 
+.listItem .deleteListItem { display: none; }
+.listItem:hover .deleteListItem, .listItem .deleteListItem:hover, .listItem .deleteListItem:active, .listItem .deleteListItem:visited, .listItem .deleteListItem:focus { 
+    display: initial; 
+    float: none !important; 
+    margin-left: 10px;
+ }
+ 
 .tagsMenu {
     border-right:1px solid #E1E3DF;
 }
 
 .tagsMenuList {
-    height: 100%;
     list-style-type:none;
     margin: 10px;
     padding: 0px;
@@ -173,4 +181,16 @@
     width: 100%;
     height: auto;
     word-wrap: break-word;
+}
+
+.headerLink {
+    text-decoration:none;
+    color:#222;
+    font-size: small;
+    margin-right: 10px;
+}
+
+.headerLink:focus, .headerLink:hover, .headerLink:active {
+    text-decoration:none;
+    color:#222;
 }

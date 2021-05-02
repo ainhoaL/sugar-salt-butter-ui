@@ -3,8 +3,7 @@ import debounce from 'lodash.debounce'
 import { RecipeCard } from './RecipeCard'
 import './Styles.css'
 import { UserContext } from './UserContext'
-
-const axios = require('axios')
+import { api } from './services/api'
 
 export function Search ({ searchParams }) {
   const [searchResults, setSearchResults] = useState([])
@@ -12,11 +11,6 @@ export function Search ({ searchParams }) {
   const [isLoading, setIsLoading] = useState(false)
   const [skip, setSkip] = useState(0)
   const idToken = useContext(UserContext)
-
-  useEffect(() => {
-    if (!idToken) return
-    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
-  }, [idToken])
 
   useEffect(() => {
     window.addEventListener('scroll', handleScroll)
@@ -28,12 +22,12 @@ export function Search ({ searchParams }) {
   useEffect(() => {
     if (!searchParams) return
     if (!idToken) return // Do not make a search if we do not have an idToken!
-    let searchHref = 'skip=' + skip
+    let searchHref = 'skip=' + skip + '&limit=70'
     for (const param of Object.entries(searchParams)) {
       searchHref += '&' + param[0] + '=' + param[1]
     }
     setIsLoading(true)
-    axios.get('http://localhost:3050/api/v1/recipes?' + searchHref)
+    api.searchRecipes(idToken, searchHref)
       .then((response) => { // TODO: deal with error
         setSearchResults(prevState => ([...prevState, ...response.data.recipes]))
         setSearchCount(response.data.count)

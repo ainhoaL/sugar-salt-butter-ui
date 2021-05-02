@@ -5,13 +5,13 @@ import qs from 'qs'
 import './Styles.css'
 
 export function SearchForm () {
-  const [searchString, setSearchString] = useState()
+  const [searchString, setSearchString] = useState('')
 
   const history = useHistory()
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    history.push('?searchString=' + searchString)
+    history.push('/?searchString=' + searchString)
   }
 
   useEffect(() => {

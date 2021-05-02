@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { Container, Row, Col, Button } from 'reactstrap'
+import { Container, Row, Col, Button, ListGroup, ListGroupItem } from 'reactstrap'
+import { Link } from 'react-router-dom'
 import './Styles.css'
 import iconServings from './icons/icons8-restaurant-24.png'
+import iconDelete from './icons/icons8-trash-can-24.png'
 import { UserContext } from './UserContext'
-
-const axios = require('axios')
+import { api } from './services/api'
 
 export function List (props) {
-  const [list, setList] = useState({})
+  const [list, setList] = useState(null)
   const [selectedRecipe, setSelectedRecipe] = useState('')
+  const [deletedList, setDeletedList] = useState(false)
   const idToken = useContext(UserContext)
 
   useEffect(() => {
@@ -18,18 +20,31 @@ export function List (props) {
   }, [idToken, props.match])
 
   const getList = (idToken, listId) => {
-    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
-    axios.get('http://localhost:3050/api/v1/lists/' + listId)
+    return api.getList(idToken, listId)
       .then((response) => { // TODO: deal with error
         const list = response.data
         setList(list)
       })
   }
 
-  const deleteRecipeFromList = (recipe) => {
-    axios.delete('http://localhost:3050' + recipe.href)
+  const deleteRecipeFromList = (recipeId) => {
+    return api.deleteRecipeFromList(idToken, list._id, recipeId)
       .then(() => { // TODO: deal with error
-        getList(props.idToken, list._id)
+        getList(idToken, list._id)
+      })
+  }
+
+  const deleteItem = (itemId) => {
+    return api.deleteItemFromList(idToken, list._id, itemId)
+      .then(() => { // TODO: deal with error
+        getList(idToken, list._id)
+      })
+  }
+
+  const deleteList = () => {
+    return api.deleteList(idToken, list._id)
+      .then(() => {
+        setDeletedList(true)
       })
   }
 
@@ -39,30 +54,31 @@ export function List (props) {
   }
 
   let itemsList
-  if (list.items) {
+  if (list.items && list.items.length > 0) {
     itemsList = list.items.map((item, index) => {
-      return <li key={item._id}><span className={selectedRecipe === item.recipeId ? 'recipeSelected' : ''}>{item.displayQuantity} {item.unit} {item.name}</span></li>
+      return <li key={item._id} className='listItem'><span className={selectedRecipe === item.recipeId ? 'recipeSelected' : ''}>{item.displayQuantity} {item.unit} {item.name}</span><Button className='deleteListItem' aria-label='delete item' onClick={() => deleteItem(item._id)}>x</Button></li>
     })
   }
 
   let recipesList
   if (list.recipes && list.recipes.recipesData) {
     recipesList = list.recipes.recipesData.map((recipe, index) => {
+      const recipeLink = '/recipes/' + recipe._id
       return (
-        <li key={recipe._id}>
+        <ListGroupItem key={recipe._id}>
           <div className='listRecipeContainer' onMouseEnter={() => setSelectedRecipe(recipe._id)} onMouseLeave={() => setSelectedRecipe()}>
-            <a href={recipe.href}>
+            <Link to={recipeLink}>
               <img src={recipe.image} className='listRecipeImage' alt={recipe.title} />
-            </a>
+            </Link>
             <div className='listRecipeInfo'>
-              <a href={recipe.href} className='listRecipeTitle'>
+              <Link to={recipeLink} className='listRecipeTitle'>
                 <span>{recipe.title}</span>
-              </a>
-              { recipe.servings ? <span><img src={iconServings} alt='servings' />{recipe.servings}</span> : null }
+              </Link>
+              {recipe.servings ? <span><img src={iconServings} alt='servings' />{recipe.servings}</span> : null}
             </div>
           </div>
-          <Button className='delete' onClick={() => deleteRecipeFromList(recipe)}>x</Button>
-        </li>
+          <Button className='deleteListItem' aria-label='delete recipe' onClick={() => deleteRecipeFromList(recipe._id)}>x</Button>
+        </ListGroupItem>
       )
     })
   }
@@ -72,23 +88,28 @@ export function List (props) {
       <Row>
         <Col sm='9' md={{ size: 6, offset: 2 }}>
           <div className='listContainer'>
-            <h4>{list.title}</h4>
+            <h4>{list.title}
+              <span className='actionsMenu'>
+                <input type='image' src={iconDelete} alt='delete list' className='action' onClick={deleteList} />
+              </span>
+            </h4>
+            {deletedList ? <i>List deleted</i> : null}
             <ul className='listItems'>
               {itemsList}
             </ul>
           </div>
         </Col>
         <Col sm='3' md={{ size: 4 }}>
-          { recipesList && recipesList.length > 0
+          {recipesList && recipesList.length > 0
             ? (
               <div className='position-fixed listContainerRecipes'>
                 <strong>Recipes:</strong>
-                <ul className='listRecipe'>
+                <ListGroup className='listRecipe'>
                   {recipesList}
-                </ul>
+                </ListGroup>
               </div>
             )
-            : null }
+            : null}
         </Col>
       </Row>
     </Container>

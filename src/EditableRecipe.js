@@ -3,8 +3,7 @@ import { Button, Form, FormGroup, Label, Input, Row, Col } from 'reactstrap'
 import './Styles.css'
 import { StarRating } from './StarRating'
 import { UserContext } from './UserContext'
-
-const axios = require('axios')
+import { api } from './services/api'
 
 const defaultEditableRecipe = {
   _id: '',
@@ -36,7 +35,6 @@ const defaultEditableRecipe = {
 
 export function EditableRecipe (props) {
   const [recipe, setRecipe] = useState(defaultEditableRecipe)
-  const [updatedRecipe, setUpdatedRecipe] = useState(false)
 
   const idToken = useContext(UserContext)
 
@@ -83,10 +81,10 @@ export function EditableRecipe (props) {
     recipeObject.ingredients = recipeObject.ingredientList
     delete recipeObject.ingredientList
 
-    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
-    axios.put('http://localhost:3050/api/v1/recipes/' + recipe._id, recipeObject)
+    return api.updateRecipe(idToken, recipe._id, recipeObject)
       .then((response) => {
-        setUpdatedRecipe(true)
+        props.updatedRecipe(true)
+        props.editRecipe(false)
       })
   }
 
@@ -109,7 +107,7 @@ export function EditableRecipe (props) {
       </FormGroup>
       <FormGroup>
         <Label for='sourceText'>Source</Label>
-        <Input type='text' name='url' id='sourceText' value={recipe.source} onChange={handleChange} />
+        <Input type='text' name='source' id='sourceText' value={recipe.source} onChange={handleChange} />
       </FormGroup>
       <FormGroup>
         <Label for='authorText'>Author</Label>
@@ -148,7 +146,7 @@ export function EditableRecipe (props) {
         </Col>
       </Row>
       <FormGroup>
-        <Label for='ingredientsText'>Ingredients</Label>
+        <Label for='ingredientListText'>Ingredients</Label>
         <Input type='textarea' name='ingredientList' id='ingredientListText' value={recipe.ingredientList} onChange={handleChange} />
       </FormGroup>
       <FormGroup>
@@ -201,10 +199,6 @@ export function EditableRecipe (props) {
           </Col>
         </Row>
       </div>
-      <FormGroup>
-        <Label for='ratingText'>Rating</Label>
-        <Input type='text' name='rating' id='ratingText' value={recipe.rating} onChange={handleChange} />
-      </FormGroup>
       <FormGroup check inline>
         <Label check>
           <Input type='checkbox' id='tryCheck' name='wantToTry' checked={recipe.wantToTry} onChange={handleChange} />{' '}
@@ -218,10 +212,7 @@ export function EditableRecipe (props) {
         </Label>
       </FormGroup>
       <br /><br />
-      <Button type='submit'>Update</Button>
-      {updatedRecipe
-        ? <i> Recipe updated</i>
-        : null}
+      <Button type='submit'>Update</Button> <Button className='cancelEdit' onClick={() => props.editRecipe(false)}>Cancel</Button>
       <br /><br />
     </Form>
   )

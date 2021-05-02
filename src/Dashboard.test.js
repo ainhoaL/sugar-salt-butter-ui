@@ -1,24 +1,42 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import axios from 'axios'
 import { Dashboard } from './Dashboard'
-import { act } from 'react-dom/test-utils'
 import { UserContext } from './UserContext'
+import { render, screen, waitFor } from '@testing-library/react'
+import { Router } from 'react-router-dom'
+import { api } from './services/api'
 
-jest.mock('axios')
-const recipesUrl = 'http://localhost:3050/api/v1/recipes'
+const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
+
+jest.mock('./services/api')
+
+jest.mock('./TagsMenu', () => {
+  return {
+    TagsMenu: () => {
+      return <div>TagsMenuComponentMock</div>
+    }
+  }
+})
+
+jest.mock('./Search', () => {
+  return {
+    Search: () => {
+      return <div>SearchComponentMock</div>
+    }
+  }
+})
+
 const location = { search: '' }
+const testUserId = 'testUser'
 
 describe('Dashboard component', () => {
-  let recipes = {
+  const recipes = {
     data: {
       count: 2,
       recipes: [{
         _id: 'recipe1',
         title: 'first recipe',
         image: '/img.png',
-        servings: 1,
-        wantToTry: true
+        servings: 1
       },
       {
         _id: 'recipe2',
@@ -28,14 +46,14 @@ describe('Dashboard component', () => {
     }
   }
 
-  let wantToTryRecipes = {
+  const wantToTryRecipes = {
     data: {
       count: 1,
       recipes: [{
-        _id: 'recipe1',
-        title: 'first recipe',
-        image: '/img.png',
-        servings: 1,
+        _id: 'recipe3',
+        title: 'third recipe',
+        image: '/img3.png',
+        servings: 2,
         wantToTry: true
       }]
     }
@@ -45,20 +63,18 @@ describe('Dashboard component', () => {
     data: {
       count: 1,
       recipes: [{
-        _id: 'recipe3',
-        title: 'third recipe',
-        image: '/img3.png',
-        servings: 5
+        _id: 'recipe4',
+        title: 'fourth recipe',
+        image: '/img4.png',
+        servings: 1
       }]
     }
   }
 
   beforeEach(() => {
-    axios.get.mockImplementation((url) => {
-      if (url.indexOf('wantToTry') > -1) {
+    api.searchRecipes.mockImplementation((userId, searchHref) => {
+      if (searchHref.indexOf('wantToTry') > -1) {
         return Promise.resolve(wantToTryRecipes)
-      } else if (url.indexOf('tags') > -1) {
-        return Promise.resolve({ data: [] })
       } else if (url.indexOf('season') > -1) {
         return Promise.resolve(seasonalRecipes)
       } else {
@@ -72,38 +88,34 @@ describe('Dashboard component', () => {
   })
 
   it('does not get recipes if there is no idToken', () => {
-    act(() => {
-      mount(<UserContext.Provider value=''><Dashboard location={location} /></UserContext.Provider>)
-    })
-
-    expect(axios.get).toHaveBeenCalledTimes(0)
+    render(<Router history={historyMock}><UserContext.Provider value=''><Dashboard location={location} /></UserContext.Provider></Router>)
+    expect(api.searchRecipes).toHaveBeenCalledTimes(0)
   })
 
   it('gets all recipes by userId when receiving an idToken', async () => {
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<UserContext.Provider value='testUser'><Dashboard location={location} /></UserContext.Provider>)
-    })
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?limit=7')
-    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?wantToTry=true&limit=7')
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Dashboard location={location} /></UserContext.Provider></Router>)
+
+    await waitFor(() => screen.getByText('first recipe'))
+    expect(screen.getByText('second recipe')).toBeInTheDocument()
+
+    await waitFor(() => screen.getByText('third recipe'))
+    await waitFor(() => screen.getByText('fourth recipe'))
+    expect(screen.getByText('Recently added:')).toBeInTheDocument()
+    expect(screen.getByText('Want to try:')).toBeInTheDocument()
+    expect(screen.getByText('In season this month:')).toBeInTheDocument()
+
+    expect(api.searchRecipes).toHaveBeenCalledTimes(3)
+    expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'limit=7')
+    expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'wantToTry=true&limit=7')
     const nowDate = new Date()
     const seasonMonth = nowDate.getMonth() + 1
-    expect(axios.get).toHaveBeenCalledWith(recipesUrl + '?season=' + seasonMonth + '&limit=7')
-
-    wrapper.update() // Re-render component
-    expect(wrapper.find('RecipeCard').length).toEqual(4)
-    expect(wrapper.find('Search').length).toEqual(0)
+    expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, '?season=' + seasonMonth + '&limit=7')
   })
 
   it('displays search component if querystring has search values', async () => {
-    let wrapper
-    let location = { search: '?searchString=cake' }
-    await act(async () => {
-      wrapper = mount(<UserContext.Provider value='testUser'><Dashboard location={location} /></UserContext.Provider>)
-    })
+    const location = { search: '?searchString=cake' }
+    render(<Router history={historyMock}><UserContext.Provider value={testUserId}><Dashboard location={location} /></UserContext.Provider></Router>)
 
-    wrapper.update() // Re-render component
-    expect(wrapper.find('Search').length).toEqual(1)
+    expect(await screen.getByText('SearchComponentMock')).toBeInTheDocument() // Search component is displayed
   })
 })

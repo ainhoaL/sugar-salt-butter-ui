@@ -11,9 +11,10 @@ export function StarRating ({ changeRating, currentRating }) {
   }
 
   for (var index = 1; index <= 5; index++) {
-    const altText = `${index} star`
+    let altText = `${index} star`
     let icon = iconStar
     if (index <= currentRating) {
+      altText += ' set'
       icon = iconFilledStar
     }
     if (!changeRating) {

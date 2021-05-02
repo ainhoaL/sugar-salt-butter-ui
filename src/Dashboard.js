@@ -6,8 +6,7 @@ import { Search } from './Search'
 import { TagsMenu } from './TagsMenu'
 import './Styles.css'
 import { UserContext } from './UserContext'
-
-const axios = require('axios')
+import { api } from './services/api'
 
 export function Dashboard ({ location }) {
   const [recentlyAdded, setRecentlyAdded] = useState([])
@@ -19,19 +18,21 @@ export function Dashboard ({ location }) {
 
   useEffect(() => {
     if (!idToken) return
-    axios.defaults.headers.common.Authorization = 'Bearer ' + idToken
+    const queryObj = qs.parse(location.search.substring(1, location.search.length))
+    setSearchParams(queryObj)
+    if (Object.keys(queryObj).length > 0) return // Do not trigger dashboard calls if we are showing the search component
 
-    axios.get('http://localhost:3050/api/v1/recipes?limit=7')
+    api.searchRecipes(idToken, 'limit=7')
       .then((response) => { // TODO: deal with error
         setRecentlyAdded(prevState => ([...prevState, ...response.data.recipes]))
       })
-    axios.get('http://localhost:3050/api/v1/recipes?wantToTry=true&limit=7')
+    api.searchRecipes(idToken, 'wantToTry=true&limit=7')
       .then((response) => { // TODO: deal with error
         setWantToTry(prevState => ([...prevState, ...response.data.recipes]))
       })
     const nowDate = new Date()
     const seasonMonth = nowDate.getMonth() + 1
-    axios.get('http://localhost:3050/api/v1/recipes?season=' + seasonMonth + '&limit=7')
+    api.searchRecipes(idToken, 'season=' + seasonMonth + '&limit=7')
       .then((response) => { // TODO: deal with error
         setSeasonal(prevState => ([...prevState, ...response.data.recipes]))
       })
@@ -40,7 +41,7 @@ export function Dashboard ({ location }) {
   useEffect(() => {
     const queryObj = qs.parse(location.search.substring(1, location.search.length))
     setSearchParams(queryObj)
-  }, [location.search])
+  }, [idToken, location.search])
 
   const dashboard = (
     <Container fluid='xl' className='resultsContainer'>

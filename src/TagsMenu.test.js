@@ -1,13 +1,15 @@
 import React from 'react'
-import { mount } from 'enzyme'
 import { TagsMenu } from './TagsMenu'
-import axios from 'axios'
-import { act } from 'react-dom/test-utils'
-import { Router } from 'react-router-dom'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { UserContext } from './UserContext'
+import { Router } from 'react-router-dom'
+import { api } from './services/api'
 
-jest.mock('axios')
+jest.mock('./services/api')
+
 const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
+const testUserId = 'testUser'
 
 describe('TagsMenu component', () => {
   const tags = {
@@ -18,7 +20,7 @@ describe('TagsMenu component', () => {
   }
 
   beforeEach(() => {
-    axios.get.mockResolvedValue(tags)
+    api.getTags.mockResolvedValue(tags)
   })
 
   afterEach(() => {
@@ -26,49 +28,40 @@ describe('TagsMenu component', () => {
   })
 
   it('does not get tags if there is no idToken', () => {
-    act(() => {
-      mount(<UserContext.Provider value=''><TagsMenu /></UserContext.Provider>)
-    })
+    render(<UserContext.Provider value=''><TagsMenu /></UserContext.Provider>)
 
-    expect(axios.get).toHaveBeenCalledTimes(0)
+    expect(api.getTags).toHaveBeenCalledTimes(0)
   })
 
   it('gets tags and displays them if there is idToken', async () => {
-    let wrapper
-    await act(async () => {
-      wrapper = mount(
-        <Router history={historyMock}>
-          <UserContext.Provider value='testUser'><TagsMenu /></UserContext.Provider>
-        </Router>
-      )
-    })
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/tags')
+    render(
+      <Router history={historyMock}>
+        <UserContext.Provider value={testUserId}><TagsMenu /></UserContext.Provider>
+      </Router>
+    )
 
-    wrapper.update() // Re-render component
-    expect(wrapper.find('li').length).toEqual(2) // 2 tags
-    const firstLink = wrapper.find('Link').at(0)
-    expect(firstLink.props().to).toEqual('/?tags=meat') // First tag Link directs to correct tag
-    expect(firstLink.text()).toEqual('meat (20)')
-    const secondLink = wrapper.find('Link').at(1)
-    expect(secondLink.props().to).toEqual('/?tags=vegetarian')
-    expect(secondLink.text()).toEqual('vegetarian (1)')
+    expect(api.getTags).toHaveBeenCalledWith(testUserId)
+
+    await waitFor(() => expect(screen.getByText('meat')).toBeInTheDocument())
+    expect(screen.getByText('20')).toBeInTheDocument()
+    expect(screen.getByText('vegetarian')).toBeInTheDocument()
+    expect(screen.getByText('1')).toBeInTheDocument()
+
+    userEvent.click(screen.getByText('meat'))
+    expect(historyMock.push).toHaveBeenCalledWith('/?tags=meat')
+    userEvent.click(screen.getByText('vegetarian'))
+    expect(historyMock.push).toHaveBeenCalledWith('/?tags=vegetarian')
   })
 
   it('displays no tags if none are returned', async () => {
-    axios.get.mockResolvedValue({ data: [] })
-    let wrapper
-    await act(async () => {
-      wrapper = mount(
-        <Router history={historyMock}>
-          <UserContext.Provider value='testUser'><TagsMenu /></UserContext.Provider>
-        </Router>
-      )
-    })
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/tags')
+    api.getTags.mockResolvedValue({ data: [] })
+    render(
+      <Router history={historyMock}>
+        <UserContext.Provider value='testUser'><TagsMenu /></UserContext.Provider>
+      </Router>
+    )
+    expect(api.getTags).toHaveBeenCalledWith(testUserId)
 
-    wrapper.update() // Re-render component
-    expect(wrapper.find('li').length).toEqual(0)
+    await waitFor(() => expect(screen.queryByRole('link')).not.toBeInTheDocument()) // 0 links
   })
 })

@@ -1,20 +1,24 @@
 import React from 'react'
-import { mount } from 'enzyme'
-import axios from 'axios'
 import { List } from './List'
-import { act } from 'react-dom/test-utils'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { UserContext } from './UserContext'
+import { Router } from 'react-router-dom'
+import { api } from './services/api'
 
-jest.mock('axios')
+const historyMock = { push: jest.fn(), location: {}, listen: jest.fn(), createHref: jest.fn() }
+
+jest.mock('./services/api')
 
 let listData
+const testUserId = 'testUser'
 
 describe('List component', () => {
   beforeEach(() => {
     listData = {
       data: {
         _id: 'testId',
-        userId: 'testUser',
+        userId: testUserId,
         title: 'test shopping list',
         items: [
           { _id: 'item1', quantity: 1, unit: 'g', name: 'test ingredient', displayQuantity: '1', recipeId: 'recipe1', servings: 1 },
@@ -44,8 +48,10 @@ describe('List component', () => {
       }
     }
 
-    axios.get.mockResolvedValue(listData)
-    axios.delete.mockResolvedValue()
+    api.getList.mockResolvedValue(listData)
+    api.deleteRecipeFromList.mockResolvedValue()
+    api.deleteItemFromList.mockResolvedValue()
+    api.deleteList.mockResolvedValue()
   })
 
   afterEach(() => {
@@ -54,101 +60,116 @@ describe('List component', () => {
 
   it('does not get list if there is no idToken', () => {
     const match = { params: { id: 'testId' } }
-    act(() => {
-      mount(<UserContext.Provider value=''><List match={match} /></UserContext.Provider>)
-    })
+    render(<Router history={historyMock}><UserContext.Provider value=''><List match={match} /></UserContext.Provider></Router>)
 
-    expect(axios.get).toHaveBeenCalledTimes(0)
+    expect(api.getList).toHaveBeenCalledTimes(0)
   })
 
   it('gets list by Id when receiving an idToken and displays list', async () => {
     const match = { params: { id: 'testId' } }
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
-    })
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
-    await axios
-    expect(axios.get).toHaveBeenCalledTimes(1)
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/testId')
+    expect(api.getList).toHaveBeenCalledTimes(1)
+    expect(api.getList).toHaveBeenCalledWith(testUserId, 'testId')
 
-    await act(async () => {
-      wrapper.update() // Re-render component
-    })
-
-    expect(wrapper.find('.listContainer').length).toEqual(1)
-    const titleHeader = wrapper.find('.listContainer h4').at(0)
-    expect(titleHeader.text()).toEqual('test shopping list') // list title
-    expect(wrapper.find('.listItems li').length).toEqual(5) // 5 items
-    expect(wrapper.find('.listRecipe li').length).toEqual(2) // 2 recipes
+    await waitFor(() => screen.getByText('test shopping list')) // list title
+    expect(screen.getByText('1 g test ingredient')).toBeInTheDocument() // 5 list items
+    expect(screen.getByText('test ingredient without quantity or unit')).toBeInTheDocument()
+    expect(screen.getByText('1 cup test ingredient2')).toBeInTheDocument()
+    expect(screen.getByText('1 g test ingredient3')).toBeInTheDocument()
+    expect(screen.getByText('1 test ingredient without unit')).toBeInTheDocument()
+    expect(screen.getByText('first recipe')).toBeInTheDocument() // 2 recipes
+    expect(screen.getByText('second recipe')).toBeInTheDocument()
   })
 
   it('renders nothing if list does not exist', async () => {
-    axios.get.mockResolvedValue({ data: null })
+    api.getList.mockResolvedValue({ data: null })
     const match = { params: { id: 'testId' } }
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
-    })
-    expect(axios.get).toHaveBeenCalledTimes(1)
-    expect(axios.defaults.headers.common.Authorization).toEqual('Bearer testUser')
-    expect(axios.get).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/testId')
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
-    await axios
-    await act(async () => {
-      wrapper.update() // Re-render component
-    })
+    expect(api.getList).toHaveBeenCalledTimes(1)
+    expect(api.getList).toHaveBeenCalledWith(testUserId, 'testId')
 
-    expect(wrapper.find('.listContainer').length).toEqual(0) // No list to display
+    await waitFor(() => expect(screen.queryByText('test shopping list')).not.toBeInTheDocument()) // list title // No list to display
+  })
+
+  it('renders no items if list has no items', async () => {
+    api.getList.mockResolvedValue({
+      data: {
+        _id: 'testId',
+        userId: 'testUser',
+        title: 'test shopping list',
+        items: [],
+        recipes: {
+          href: '/api/v1/lists/testId/recipes'
+        }
+      }
+    })
+    const match = { params: { id: 'testId' } }
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
+
+    expect(api.getList).toHaveBeenCalledTimes(1)
+    expect(api.getList).toHaveBeenCalledWith(testUserId, 'testId')
+
+    await waitFor(() => screen.getByText('test shopping list')) // list title
   })
 
   it('can delete recipe from list', async () => {
     const match = { params: { id: 'testId' } }
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
-    })
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
-    await axios
-    await act(async () => {
-      wrapper.update() // Re-render component
-      const deleteButton = wrapper.find('.delete').at(0)
-      deleteButton.simulate('click') // Delete first recipe
-    })
+    await waitFor(() => userEvent.click(screen.getAllByLabelText('delete recipe')[0])) // click delete button
 
-    await axios
-    expect(axios.delete).toHaveBeenCalledTimes(1)
-    expect(axios.delete).toHaveBeenCalledWith('http://localhost:3050/api/v1/lists/testId/recipes/recipe1')
+    expect(api.deleteRecipeFromList).toHaveBeenCalledTimes(1)
+    expect(api.deleteRecipeFromList).toHaveBeenCalledWith(testUserId, 'testId', 'recipe1')
+
+    expect(api.getList).toHaveBeenCalledTimes(2)
+    expect(api.getList).toHaveBeenCalledWith(testUserId, 'testId')
   })
 
   it('hovering over recipe highlights list items', async () => {
     const match = { params: { id: 'testId' } }
-    let wrapper
-    await act(async () => {
-      wrapper = mount(<UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider>)
-    })
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
 
-    await axios
-    await act(async () => {
-      wrapper.update() // Re-render component
-      const listRecipeInfo = wrapper.find('.listRecipeContainer').at(0)
-      listRecipeInfo.simulate('mouseenter') // Hover over first recipe
-    })
+    await waitFor(() => screen.getByText('test shopping list')) // list title
 
-    await act(async () => {
-      wrapper.update() // Re-render component
-    })
-    expect(wrapper.find('.recipeSelected').length).toEqual(3) // 3 selected items
+    fireEvent.mouseEnter(screen.getByText('first recipe'))
 
-    await act(async () => {
-      const listRecipeInfo = wrapper.find('.listRecipeContainer').at(0)
-      listRecipeInfo.simulate('mouseleave') // Leave first recipe
-    })
+    expect(screen.getByText('1 g test ingredient')).toHaveClass('recipeSelected')
+    expect(screen.getByText('test ingredient without quantity or unit')).toHaveClass('recipeSelected')
+    expect(screen.getByText('1 cup test ingredient2')).toHaveClass('recipeSelected')
+    expect(screen.getByText('1 g test ingredient3')).not.toHaveClass('recipeSelected')
 
-    await act(async () => {
-      wrapper.update() // Re-render component
-    })
-    expect(wrapper.find('.recipeSelected').length).toEqual(0) // 0 selected items
+    fireEvent.mouseLeave(screen.getByText('first recipe'))
+
+    expect(screen.getByText('1 g test ingredient')).not.toHaveClass('recipeSelected')
+    expect(screen.getByText('test ingredient without quantity or unit')).not.toHaveClass('recipeSelected')
+    expect(screen.getByText('1 cup test ingredient2')).not.toHaveClass('recipeSelected')
+    expect(screen.getByText('1 g test ingredient3')).not.toHaveClass('recipeSelected')
+  })
+
+  it('can delete item from list', async () => {
+    const match = { params: { id: 'testId' } }
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
+
+    await waitFor(() => userEvent.click(screen.getAllByLabelText('delete item')[0])) // click delete button
+
+    expect(api.deleteItemFromList).toHaveBeenCalledTimes(1)
+    expect(api.deleteItemFromList).toHaveBeenCalledWith(testUserId, 'testId', 'item1')
+
+    expect(api.getList).toHaveBeenCalledTimes(2)
+    expect(api.getList).toHaveBeenCalledWith(testUserId, 'testId')
+  })
+
+  it('tries to delete list when clicking delete button', async () => {
+    const match = { params: { id: 'testId' } }
+    render(<Router history={historyMock}><UserContext.Provider value='testUser'><List match={match} /></UserContext.Provider></Router>)
+
+    await waitFor(() => userEvent.click(screen.getByAltText('delete list'))) // click delete button
+
+    expect(api.deleteList).toHaveBeenCalledTimes(1)
+    expect(api.deleteList).toHaveBeenCalledWith(testUserId, 'testId')
+
+    await waitFor(() => expect(screen.getByText('List deleted')).toBeInTheDocument())
   })
 })
