@@ -36,7 +36,7 @@ export function Dashboard ({ location }) {
       .then((response) => { // TODO: deal with error
         setSeasonal(prevState => ([...prevState, ...response.data.recipes]))
       })
-  }, [idToken])
+  }, [idToken, location.search])
 
   useEffect(() => {
     const queryObj = qs.parse(location.search.substring(1, location.search.length))
