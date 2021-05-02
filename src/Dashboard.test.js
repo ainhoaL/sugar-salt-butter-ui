@@ -75,7 +75,7 @@ describe('Dashboard component', () => {
     api.searchRecipes.mockImplementation((userId, searchHref) => {
       if (searchHref.indexOf('wantToTry') > -1) {
         return Promise.resolve(wantToTryRecipes)
-      } else if (url.indexOf('season') > -1) {
+      } else if (searchHref.indexOf('season') > -1) {
         return Promise.resolve(seasonalRecipes)
       } else {
         return Promise.resolve(recipes)
@@ -109,7 +109,7 @@ describe('Dashboard component', () => {
     expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'wantToTry=true&limit=7')
     const nowDate = new Date()
     const seasonMonth = nowDate.getMonth() + 1
-    expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, '?season=' + seasonMonth + '&limit=7')
+    expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'season=' + seasonMonth + '&limit=7')
   })
 
   it('displays search component if querystring has search values', async () => {
