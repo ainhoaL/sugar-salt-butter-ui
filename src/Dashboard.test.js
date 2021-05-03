@@ -102,7 +102,7 @@ describe('Dashboard component', () => {
     await waitFor(() => screen.getByText('fourth recipe'))
     expect(screen.getByText('Recently added:')).toBeInTheDocument()
     expect(screen.getByText('Want to try:')).toBeInTheDocument()
-    expect(screen.getByText('In season this month:')).toBeInTheDocument()
+    expect(screen.getByText('In season:')).toBeInTheDocument()
 
     expect(api.searchRecipes).toHaveBeenCalledTimes(3)
     expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'limit=7')

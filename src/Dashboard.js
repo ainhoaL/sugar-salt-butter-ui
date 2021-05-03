@@ -44,7 +44,7 @@ export function Dashboard ({ location }) {
       <ul className='results'>
         {recentlyAdded.map((recipe) => <RecipeCard key={recipe._id} data={recipe} />)}
       </ul>
-      <span>In season this month:</span>
+      <span>In season:</span>
       <ul className='results'>
         {seasonal.map((recipe) => <RecipeCard key={recipe._id} data={recipe} />)}
       </ul>
