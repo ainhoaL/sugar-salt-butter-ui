@@ -38,11 +38,6 @@ export function Dashboard ({ location }) {
       })
   }, [idToken, location.search])
 
-  useEffect(() => {
-    const queryObj = qs.parse(location.search.substring(1, location.search.length))
-    setSearchParams(queryObj)
-  }, [idToken, location.search])
-
   const dashboard = (
     <Container fluid='xl' className='resultsContainer'>
       <span>Recently added:</span>
