@@ -59,10 +59,24 @@ describe('Dashboard component', () => {
     }
   }
 
+  let seasonalRecipes = {
+    data: {
+      count: 1,
+      recipes: [{
+        _id: 'recipe4',
+        title: 'fourth recipe',
+        image: '/img4.png',
+        servings: 1
+      }]
+    }
+  }
+
   beforeEach(() => {
     api.searchRecipes.mockImplementation((userId, searchHref) => {
       if (searchHref.indexOf('wantToTry') > -1) {
         return Promise.resolve(wantToTryRecipes)
+      } else if (searchHref.indexOf('season') > -1) {
+        return Promise.resolve(seasonalRecipes)
       } else {
         return Promise.resolve(recipes)
       }
@@ -85,12 +99,17 @@ describe('Dashboard component', () => {
     expect(screen.getByText('second recipe')).toBeInTheDocument()
 
     await waitFor(() => screen.getByText('third recipe'))
+    await waitFor(() => screen.getByText('fourth recipe'))
     expect(screen.getByText('Recently added:')).toBeInTheDocument()
     expect(screen.getByText('Want to try:')).toBeInTheDocument()
+    expect(screen.getByText('In season:')).toBeInTheDocument()
 
-    expect(api.searchRecipes).toHaveBeenCalledTimes(2)
+    expect(api.searchRecipes).toHaveBeenCalledTimes(3)
     expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'limit=7')
     expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'wantToTry=true&limit=7')
+    const nowDate = new Date()
+    const seasonMonth = nowDate.getMonth() + 1
+    expect(api.searchRecipes).toHaveBeenCalledWith(testUserId, 'season=' + seasonMonth + '&limit=7')
   })
 
   it('displays search component if querystring has search values', async () => {
