@@ -4,26 +4,26 @@ Sugar Salt Butter UI [![Build Status](https://travis-ci.com/ainhoaL/sugar-salt-b
 React web application to organize (store and search) food recipes. Backend is in [`sugar-salt-butter`](https://github.com/ainhoaL/sugar-salt-butter-ui), a Node.js application.
 
 Entry page is the dashboard, which shows the latest recipes added to the system, recipes that have ingredients that are in season now, and recipes marked as wanting to try:
-![sugar-salt-butter-ui dashboard image](docs/dashboard.png)
+![sugar-salt-butter-ui dashboard image](docs/dashboard.png?raw=true)
 
 Recipe page shows all the recipe information, including servings, rating and tags. From here recipe can be edited, and added to a shopping list.
-![sugar-salt-butter-ui recipe image](https://github.com/ainhoaL/sugar-salt-butter-ui/blob/master/docs/dashboard.png)
+![sugar-salt-butter-ui recipe image](docs/dashboard.png?raw=true)
 
 Shopping list page shows all the ingredients in the shopping list, and which recipes they belong to. Items can be deleted individually or a whole set can be deleted by removing the recipe from the shopping list.
-![sugar-salt-butter-ui shopping list image](https://github.com/ainhoaL/sugar-salt-butter-ui/blob/master/docs/list.png)
+![sugar-salt-butter-ui shopping list image](docs/list.png?raw=true)
 
 Search functionality with infinite scrolling:
-![sugar-salt-butter-ui search image](https://github.com/ainhoaL/sugar-salt-butter-ui/blob/master/docs/search.png)
+![sugar-salt-butter-ui search image](docs/search.png?raw=true)
 
 
 ## Setup
 - Setup [`sugar-salt-butter`](https://github.com/ainhoaL/sugar-salt-butter#setup).
 - In `sugar-salt-butter-ui` directory, run `npm i` to install all dependencies.
-- Set environment variable `WEBCLIENT_ID` to ClientID obtained for the web client in the [backend server setup step](https://github.com/ainhoaL/sugar-salt-butter#setup).
+- Set environment variable `REACT_APP_WEBCLIENT_ID` to ClientID obtained for the web client in the [backend server setup step](https://github.com/ainhoaL/sugar-salt-butter#setup).
 
 ## Start the application
 - Start [`sugar-salt-butter`](https://github.com/ainhoaL/sugar-salt-butter#start-the-application)
-- Make sure `WEBCLIENT_ID` environment variable is set.
+- Make sure `REACT_APP_WEBCLIENT_ID` environment variable is set.
 - Run command `npm start`.
 
 Note: By default server starts on port 3000 and will try to communicate to a backend server on port 3050.
