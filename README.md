@@ -4,7 +4,7 @@ Sugar Salt Butter UI [![Build Status](https://travis-ci.com/ainhoaL/sugar-salt-b
 React web application to organize (store and search) food recipes. Backend is in [`sugar-salt-butter`](https://github.com/ainhoaL/sugar-salt-butter-ui), a Node.js application.
 
 Entry page is the dashboard, which shows the latest recipes added to the system, recipes that have ingredients that are in season now, and recipes marked as wanting to try:
-![sugar-salt-butter-ui dashboard image](https://github.com/ainhoaL/sugar-salt-butter-ui/blob/master/docs/dashboard.png)
+![sugar-salt-butter-ui dashboard image](docs/dashboard.png)
 
 Recipe page shows all the recipe information, including servings, rating and tags. From here recipe can be edited, and added to a shopping list.
 ![sugar-salt-butter-ui recipe image](https://github.com/ainhoaL/sugar-salt-butter-ui/blob/master/docs/dashboard.png)
