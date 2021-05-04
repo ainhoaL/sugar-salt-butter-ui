@@ -7,7 +7,7 @@ Entry page is the dashboard, which shows the latest recipes added to the system,
 ![sugar-salt-butter-ui dashboard image](docs/dashboard.png?raw=true)
 
 Recipe page shows all the recipe information, including servings, rating and tags. From here recipe can be edited, and added to a shopping list.
-![sugar-salt-butter-ui recipe image](docs/dashboard.png?raw=true)
+![sugar-salt-butter-ui recipe image](docs/recipe.png?raw=true)
 
 Shopping list page shows all the ingredients in the shopping list, and which recipes they belong to. Items can be deleted individually or a whole set can be deleted by removing the recipe from the shopping list.
 ![sugar-salt-butter-ui shopping list image](docs/list.png?raw=true)
